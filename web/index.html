@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIAsistentPro - Asistente Virtual Inteligente</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Landing Page -->
+    <div id="landingPage" class="landing-page">
+        <!-- Header -->
+        <header class="header">
+            <nav class="navbar">
+                <div class="nav-brand">
+                    <i class="fas fa-robot"></i>
+                    <span>AIAsistentPro</span>
+                </div>
+                <div class="nav-links">
+                    <a href="#" onclick="scrollToTop()">Inicio</a>
+                    <a href="#features">Funcionalidades</a>
+                    <a href="#pricing">Precios</a>
+                    <a href="contact.html">Contacto</a>
+                    <button id="loginButton" class="btn btn-primary" onclick="showLoginModal()">
+                        Acceder
+                    </button>
+                    <button id="dashboardButton" class="btn btn-primary hidden" onclick="showDashboard()">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </button>
+                    <button id="logoutButton" class="btn btn-outline hidden" onclick="logout()">
+                        Cerrar Sesión
+                    </button>
+                </div>
+            </nav>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Automatiza tu Negocio con IA</h1>
+                <p class="hero-subtitle">
+                    AIAsistentPro es tu asistente virtual inteligente que gestiona citas, 
+                    responde WhatsApp y automatiza tu atención al cliente 24/7
+                </p>
+                <div class="hero-buttons">
+                    <button class="btn btn-primary btn-large" onclick="showRegisterModal()">
+                        <i class="fas fa-rocket"></i> Comenzar Gratis
+                    </button>
+                    <button class="btn btn-secondary btn-large" onclick="showDemo()">
+                        <i class="fas fa-play"></i> Ver Demo
+                    </button>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <strong>500+</strong>
+                        <span>Empresas Confían</span>
+                    </div>
+                    <div class="stat">
+                        <strong>10k+</strong>
+                        <span>Citas Automatizadas</span>
+                    </div>
+                    <div class="stat">
+                        <strong>24/7</strong>
+                        <span>Atención Continua</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="chatbot-preview">
+                    <div class="chat-header">
+                        <i class="fas fa-robot"></i>
+                        <span>Asistente Virtual</span>
+                        <div class="status-online"></div>
+                    </div>
+                    <div class="chat-messages">
+                        <div class="message bot">
+                            ¡Hola! ¿En qué puedo ayudarte hoy? 😊
+                        </div>
+                        <div class="message user">
+                            ¿Tienen cita disponible para mañana?
+                        </div>
+                        <div class="message bot">
+                            ¡Por supuesto! Tengo disponibilidad a las 10:00 AM, 2:00 PM y 4:00 PM. ¿Cuál prefieres?
+                        </div>
+                    </div>
+                    <div class="typing-indicator">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Nichos Section -->
+        <section class="niches">
+            <div class="container">
+                <h2 style="text-align: center;">Especialidad para tu Negocio</h2>
+                <p class="section-subtitle" style="text-align: center;">Configuraciones predefinidas para diferentes tipos de negocio</p>
+
+                <div class="niches-horizontal">
+                    <div class="niche-card">
+                        <div class="niche-icon">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                        <h3>Clínicas</h3>
+                        <p>Automatización para centros médicos, gestión de citas y recordatorios</p>
+                        <ul class="niche-features">
+                            <li><i class="fa-solid fa-square-check" style="color: #03d100;"></i> Recordatorios de citas</li>
+                            <li><i class="fa-solid fa-square-check" style="color: #03d100;"></i> Gestión de pacientes</li>
+                            <li><i class="fa-solid fa-square-check" style="color: #03d100;"></i> Historial médico básico</li>
+                        </ul>
+                        <div class="niche-buttons">
+                            <button class="btn-train-sector" onclick="trainAIForSector('clinic', event)">
+                                <i class="fas fa-brain"></i> Entrenar IA
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="niche-card">
+                        <div class="niche-icon">
+                            <i class="fas fa-briefcase"></i>
+                        </div>
+                        <h3>Gestorías</h3>
+                        <p>Asistencia para despachos profesionales, gestión de trámites y consultas</p>
+                        <ul class="niche-features">
+                            <li><i class="fa-solid fa-square-check" style="color: #03d100;"></i> Gestión de trámites</li>
+                            <li><i class="fa-solid fa-square-check" style="color: #03d100;"></i> Consultas fiscales</li>
+                            <li><i class="fa-solid fa-square-check" style="color: #03d100;"></i> Recordatorios de vencimientos</li>
+                        </ul>
+                        <div class="niche-buttons">
+                            <button class="btn-train-sector" onclick="trainAIForSector('management', event)">
+                                <i class="fas fa-brain"></i> Entrenar IA
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="niche-card">
+                        <div class="niche-icon">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <h3>Administradores de Fincas</h3>
+                        <p>Gestión de propiedades, inquilinos y mantenimiento</p>
+                        <ul class="niche-features">
+                            <li><i class="fa-solid fa-square-check" style="color: #03d100;"></i> Gestión de incidencias</li>
+                            <li><i class="fa-solid fa-square-check" style="color: #03d100;"></i> Cobros y pagos</li>
+                            <li><i class="fa-solid fa-square-check" style="color: #03d100;"></i> Mantenimiento automático</li>
+                        </ul>
+                        <div class="niche-buttons">
+                            <button class="btn-train-sector" onclick="trainAIForSector('property_admin', event)">
+                                <i class="fas fa-brain"></i> Entrenar IA
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="niche-card">
+                        <div class="niche-icon">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <h3>E-commerce</h3>
+                        <p>Automatización para tiendas online, atención al cliente y gestión de pedidos</p>
+                        <ul class="niche-features">
+                            <li><i class="fa-solid fa-square-check" style="color: #03d100;"></i> Gestión de pedidos automática</li>
+                            <li><i class="fa-solid fa-square-check" style="color: #03d100;"></i> Soporte de productos 24/7</li>
+                            <li><i class="fa-solid fa-square-check" style="color: #03d100;"></i> Seguimiento de envíos</li>
+                        </ul>
+                        <div class="niche-buttons">
+                            <button class="btn-train-sector" onclick="trainAIForSector('ecommerce', event)">
+                                <i class="fas fa-brain"></i> Entrenar IA
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="features">
+            <div class="container">
+                <h2>Funcionalidades Principales</h2>
+                <p class="section-subtitle">Automatización completa para WhatsApp, Telegram y Email</p>
+
+                <div class="features-grid-two-rows">
+                    <div class="features-row">
+                        <div class="feature-card">
+                            <div class="feature-icon multi-channel">
+                                <i class="fab fa-whatsapp"></i>
+                                <i class="fab fa-telegram"></i>
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <h3>Multi-Canal Automatizado</h3>
+                            <p>WhatsApp, Telegram y Email integrados. Tu asistente responde en todos los canales 24/7.</p>
+                            <ul class="feature-list">
+                                <li><i class="fa-solid fa-square-check" style="color: #03d100;"></i> WhatsApp Business API</li>
+                                <li><i class="fa-solid fa-square-check" style="color: #03d100;"></i> Telegram Bot integrado</li>
+                                <li><i class="fa-solid fa-square-check" style="color: #03d100;"></i> Email marketing automático</li>
+                                <li><i class="fa-solid fa-square-check" style="color: #03d100;"></i> Respuestas unificadas</li>
+                            </ul>
+                        </div>
+
+                        <div class="feature-card ">
+                            <div class="feature-icon">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                            <h3>Gestión de Citas</h3>
+                            <p>Agenda citas automáticamente y envía recordatorios. Sin intervención manual.</p>
+                            <ul class="feature-list">
+                                <li><i class="fa-solid fa-square-check" style="color: #03d100;"></i> Agendamiento automático</li>
+                                <li><i class="fa-solid fa-square-check" style="color: #03d100;"></i> Recordatorios SMS/WhatsApp</li>
+                                <li><i class="fa-solid fa-square-check" style="color: #03d100;"></i> Gestión de cancelaciones</li>
+                            </ul>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                            <h3>IA Personalizada</h3>
+                            <p>Entrenar tu asistente con información específica de tu negocio y servicios.</p>
+                            <ul class="feature-list">
+                                <li><i class="fa-solid fa-square-check" style="color: #03d100;"></i> Conocimiento personalizado</li>
+                                <li><i class="fa-solid fa-square-check" style="color: #03d100;"></i> Respuestas contextuales</li>
+                                <li><i class="fa-solid fa-square-check" style="color: #03d100;"></i> Aprendizaje continuo</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="features-row">
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <h3>Analytics Avanzados</h3>
+                            <p>Métricas detalladas de conversaciones, citas y satisfacción del cliente.</p>
+                            <ul class="feature-list">
+                                <li><i class="fa-solid fa-square-check" style="color: #03d100;"></i> Dashboard en tiempo real</li>
+                                <li><i class="fa-solid fa-square-check" style="color: #03d100;"></i> Reportes automáticos</li>
+                                <li><i class="fa-solid fa-square-check" style="color: #03d100;"></i> KPIs personalizados</li>
+                            </ul>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <h3>Llamadas</h3>
+                            <p>Recordatorios automáticos por llamada con voz natural y humana.</p>
+                            <ul class="feature-list">
+                                <li><i class="fa-solid fa-square-check" style="color: #03d100;"></i> Voz natural AI</li>
+                                <li><i class="fa-solid fa-square-check" style="color: #03d100;"></i> Recordatorios automáticos</li>
+                                <li><i class="fa-solid fa-square-check" style="color: #03d100;"></i> Confirmación de citas</li>
+                            </ul>
+                        </div>
+
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <h3>CRM Integrado</h3>
+                            <p>Gestiona todos tus clientes desde un solo lugar con historial completo.</p>
+                            <ul class="feature-list">
+                                <li><i class="fa-solid fa-square-check" style="color: #03d100;"></i> Base de datos clientes</li>
+                                <li><i class="fa-solid fa-square-check" style="color: #03d100;"></i> Historial de interacciones</li>
+                                <li><i class="fa-solid fa-square-check" style="color: #03d100;"></i> Segmentación automática</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+
+        <!-- Pricing Section -->
+        <section id="pricing" class="pricing">
+            <div class="container">
+                <h2>Planes y Precios</h2>
+                <p class="section-subtitle">Elige el plan perfecto para tu negocio</p>
+
+                <div class="pricing-cards-vertical">
+                    <div class="pricing-card-vertical">
+                        <h3>Prueba Gratuita</h3>
+                        <div class="price-vertical">
+                            <span class="amount">€0</span>
+                            <span class="period">/7 días</span>
+                        </div>
+                        <ul class="pricing-features-vertical">
+                            <li><i class="fas fa-check"></i> Hasta 10 conversaciones</li>
+                            <li><i class="fas fa-check"></i> 1 asistente virtual básico</li>
+                            <li><i class="fas fa-times"></i> WhatsApp Business</li>
+                            <li><i class="fas fa-times"></i> Telegram</li>
+                            <li><i class="fas fa-times"></i> Email marketing</li>
+                            <li><i class="fas fa-times"></i> Llamadas inteligentes</li>
+                            <li><i class="fas fa-times"></i> Analytics</li>
+                            <li><i class="fas fa-times"></i> API personalizada</li>
+                        </ul>
+                        <button class="btn btn-outline btn-block" onclick="selectPlan('trial')">
+                            Eligir Plan
+                        </button>
+                    </div>
+
+                    <div class="pricing-card-vertical">
+                        <h3>Plan Básico</h3>
+                        <div class="price-vertical">
+                            <span class="amount">€29.00</span>
+                            <span class="period">/mes</span>
+                        </div>
+                        <ul class="pricing-features-vertical">
+                            <li><i class="fas fa-check"></i> Hasta 100 conversaciones/mes</li>
+                            <li><i class="fas fa-check"></i> 1 asistente virtual</li>
+                            <li><i class="fas fa-check"></i> WhatsApp + Telegram + Email</li>
+                            <li><i class="fas fa-check"></i> Recordatorios básicos</li>
+                            <li><i class="fas fa-times"></i> Llamadas inteligentes</li>
+                            <li><i class="fas fa-check"></i> Analytics básico</li>
+                            <li><i class="fas fa-check"></i> Soporte por email</li>
+                            <li><i class="fas fa-times"></i> API personalizada</li>
+                        </ul>
+                        <button class="btn btn-outline btn-block" onclick="selectPlan('basic')">
+                            Elegir Plan
+                        </button>
+                    </div>
+
+                    <div class="pricing-card-vertical featured">
+                        <div class="popular-badge-vertical">Recomendado</div>
+                        <h3>Plan Premium</h3>
+                        <div class="price-vertical">
+                            <span class="amount">€59.00</span>
+                            <span class="period">/mes</span>
+                        </div>
+                        <ul class="pricing-features-vertical">
+                            <li><i class="fas fa-check"></i> Conversaciones ilimitadas</li>
+                            <li><i class="fas fa-check"></i> Múltiples asistentes virtuales</li>
+                            <li><i class="fas fa-check"></i> WhatsApp + Telegram + Email</li>
+                            <li><i class="fas fa-check"></i> Recordatorios avanzados</li>
+                            <li><i class="fas fa-check"></i> Llamadas inteligentes</li>
+                            <li><i class="fas fa-check"></i> Analytics avanzados</li>
+                            <li><i class="fas fa-check"></i> Soporte 24/7</li>
+                            <li><i class="fas fa-check"></i> API personalizada</li>
+                        </ul>
+                        <button class="btn btn-primary btn-block" onclick="selectPlan('premium')">
+                            Elegir Plan
+                        </button>
+                    </div>
+
+                    <div class="pricing-card-vertical">
+                        <h3>Plan Enterprise</h3>
+                        <div class="price-vertical">
+                            <span class="amount">€99.00</span>
+                            <span class="period">/mes</span>
+                        </div>
+                        <ul class="pricing-features-vertical">
+                            <li><i class="fas fa-check"></i> Conversaciones ilimitadas</li>
+                            <li><i class="fas fa-check"></i> Asistentes ilimitados</li>
+                            <li><i class="fas fa-check"></i> WhatsApp + Telegram + Email</li>
+                            <li><i class="fas fa-check"></i> Recordatorios avanzados</li>
+                            <li><i class="fas fa-check"></i> Llamadas inteligentes</li>
+                            <li><i class="fas fa-check"></i> Analytics avanzados</li>
+                            <li><i class="fas fa-check"></i> Soporte dedicado</li>
+                            <li><i class="fas fa-check"></i> API personalizada</li>
+                        </ul>
+                        <button class="btn btn-outline btn-block" onclick="selectPlan('enterprise')">
+                            Elegir Plan
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonials -->
+        <section class="testimonials">
+            <div class="container">
+                <h2>Testimonios de Clientes</h2>
+                <div class="testimonials-grid-two-rows">
+                    <div class="testimonials-row">
+                        <div class="testimonial">
+                            <div class="testimonial-stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                            </div>
+                            <div class="testimonial-content">
+                                "AIAsistentPro revolucionó mi consulta médica. Ahora mis pacientes pueden agendar citas 24/7 y yo me enfoco en lo importante."
+                            </div>
+                            <div class="testimonial-author">
+                                <strong>Dra. María González</strong>
+                                <span>Clínica Dental</span>
+                            </div>
+                        </div>
+                        <div class="testimonial">
+                            <div class="testimonial-stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="testimonial-content">
+                                "Increíble cómo automatizó todo nuestro proceso de ventas. Las conversiones aumentaron 300% en solo 2 meses."
+                            </div>
+                            <div class="testimonial-author">
+                                <strong>Carlos Ramírez</strong>
+                                <span>Agencia Inmobiliaria</span>
+                            </div>
+                        </div>
+                        <div class="testimonial">
+                            <div class="testimonial-stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="far fa-star"></i>
+                            </div>
+                            <div class="testimonial-content">
+                                "El mejor asistente virtual que hemos probado. Nuestros clientes están encantados con la atención inmediata."
+                            </div>
+                            <div class="testimonial-author">
+                                <strong>Ana López</strong>
+                                <span>Spa & Wellness</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="testimonials-row">
+                        <div class="testimonial">
+                            <div class="testimonial-stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="far fa-star"></i>
+                            </div>
+                            <div class="testimonial-content">
+                                "Como gestoría, necesitábamos automatizar recordatorios fiscales. AIAsistentPro nos ahorró horas de trabajo manual."
+                            </div>
+                            <div class="testimonial-author">
+                                <strong>Luis Martínez</strong>
+                                <span>Gestoría Fiscal</span>
+                            </div>
+                        </div>
+                        <div class="testimonial">
+                            <div class="testimonial-stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                            </div>
+                            <div class="testimonial-content">
+                                "Gestiono 15 comunidades de propietarios y ahora todo está automatizado. Las incidencias se resuelven al instante."
+                            </div>
+                            <div class="testimonial-author">
+                                <strong>Patricia Ruiz</strong>
+                                <span>Administradora de Fincas</span>
+                            </div>
+                        </div>
+                        <div class="testimonial">
+                            <div class="testimonial-stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="testimonial-content">
+                                "La integración con WhatsApp Business cambió nuestro negocio. Respondemos consultas incluso cuando dormimos."
+                            </div>
+                            <div class="testimonial-author">
+                                <strong>Roberto Sánchez</strong>
+                                <span>Centro de Estética</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+
+        <!-- CTA Section -->
+        <section class="cta">
+            <div class="container">
+                <h2>¿Listo para Automatizar tu Negocio?</h2>
+                <p>Únete a cientos de empresas que ya confían en AIAsistentPro</p>
+                <div class="cta-buttons">
+                    <button class="btn btn-primary btn-large" onclick="showRegisterModal()">
+                        <i class="fas fa-rocket"></i> Comenzar Ahora - Gratis
+                    </button>
+                    <button class="btn btn-outline btn-large" onclick="openLiveDemo()">
+                        <i class="fas fa-play"></i> Probar Demo en Vivo
+                    </button>
+                </div></div>
+                <div class="guarantee">
+                    <div class="guarantee-badge">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="guarantee-text">
+                        <div class="guarantee-title">GARANTÍA DE DEVOLUCIÓN</div>
+                        <div class="guarantee-subtitle">30 días - Sin riesgo</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-main">
+                    <div class="footer-brand">
+                        <div class="brand-logo">
+                            <i class="fas fa-robot"></i>
+                            <span>AIAsistentPro</span>
+                        </div>
+                        <p>La plataforma de automatización más completa para tu negocio</p>
+                    </div>
+
+                    <div class="footer-nav">
+                        <div class="footer-section">
+                            <h4>Producto</h4>
+                            <a href="#features" onclick="scrollToSection('features')">Funcionalidades</a>
+                            <a href="#pricing" onclick="scrollToSection('pricing')">Precios</a>
+                            <a href="#" onclick="showDemo()">Demo en Vivo</a>
+                            <a href="#" onclick="showIntegrations()">Integraciones</a>
+                        </div>
+
+                        <div class="footer-section">
+                            <h4>Sectores</h4>
+                            <a href="#" onclick="selectNiche('clinicas')">Clínicas</a>
+                            <a href="#" onclick="selectNiche('gestorias')">Gestorías</a>
+                            <a href="#" onclick="selectNiche('administradores')">Administradores</a>
+                            <a href="#" onclick="showMoreNiches()">Más Sectores</a>
+                        </div>
+
+                        <div class="footer-section">
+                            <h4>Soporte</h4>
+                            <a href="#" onclick="showHelp()">Centro de Ayuda</a>
+                            <a href="contact.html">Contacto</a>
+                            <a href="#" onclick="showAPI()">Documentación API</a>
+                            <a href="#" onclick="showStatus()">Estado del Servicio</a>
+                        </div>
+
+                        <div class="footer-section">
+                            <h4>Empresa</h4>
+                            <a href="#" onclick="showAbout()">Sobre Nosotros</a>
+                            <a href="#" onclick="showBlog()">Blog</a>
+                            <a href="#" onclick="showCareers()">Carreras</a>
+                            <a href="#" onclick="showPress()">Prensa</a>
+                        </div>
+
+                        <div class="footer-section contact-info">
+                            <h4>Contacto</h4>
+                            <div class="contact-item">
+                                <i class="fas fa-envelope"></i>
+                                <span>hola@aiasistentpro.com</span>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-phone"></i>
+                                <span>+34 900 123 456</span>
+                            </div>
+                            <div class="social-links">
+                                <a href="#" onclick="openSocial('twitter')"><i class="fab fa-twitter"></i></a>
+                                <a href="#" onclick="openSocial('linkedin')"><i class="fab fa-linkedin"></i></a>
+                                <a href="#" onclick="openSocial('facebook')"><i class="fab fa-facebook"></i></a>
+                                <a href="#" onclick="openSocial('instagram')"><i class="fab fa-instagram"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer-bottom">
+                    <div class="legal-links">
+                        <a href="#" onclick="showPrivacy()">Política de Privacidad</a>
+                        <a href="#" onclick="showTerms()">Términos de Servicio</a>
+                        <a href="#" onclick="showCookies()">Política de Cookies</a>
+                        <a href="#" onclick="showGDPR()">RGPD</a>
+                    </div>
+                    <p>&copy; 2024 AIAsistentPro. Todos los derechos reservados.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-robot"></i> AIAsistentPro</h2>
+                <button onclick="closeModal()" class="close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="tabs">
+                    <button class="tab-button active" onclick="openTab('login')">Iniciar Sesión</button>
+                    <button class="tab-button" onclick="openTab('register')">Registrarse</button>
+                </div>
+
+                <!-- Login Tab -->
+                <div id="login" class="tab-content active">
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label for="loginEmail">Email</label>
+                            <input type="email" id="loginEmail" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="loginPassword">Contraseña</label>
+                            <input type="password" id="loginPassword" name="password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            Iniciar Sesión
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Register Tab -->
+                <div id="register" class="tab-content">
+                    <form id="registerForm">
+                        <div class="form-group">
+                            <label for="regEmail">Email</label>
+                            <input type="email" id="regEmail" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="regPassword">Contraseña</label>
+                            <input type="password" id="regPassword" name="password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="businessName">Nombre del Negocio</label>
+                            <input type="text" id="businessName" name="business_name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Teléfono (opcional)</label>
+                            <input type="tel" id="phone" name="phone">
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            Registrarse
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard (hidden initially) -->
+    <div id="dashboard" class="dashboard hidden">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h3><i class="fas fa-robot"></i> AIAsistentPro</h3>
+                <button onclick="backToHome()" class="btn btn-outline btn-sm" style="margin-top: 10px;">
+                    <i class="fas fa-home"></i> Volver al Inicio
+                </button>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="#" onclick="showSection('overview')" class="active">
+                    <i class="fas fa-chart-pie"></i> Resumen
+                </a></li>
+                <li><a href="#" onclick="showSection('appointments')">
+                    <i class="fas fa-calendar-alt"></i> Citas
+                </a></li>
+                <li><a href="#" onclick="showSection('conversations')">
+                    <i class="fas fa-comments"></i> Conversaciones
+                </a></li>
+                <li><a href="#" onclick="showSection('customers')">
+                    <i class="fas fa-users"></i> Clientes
+                </a></li>
+                <li><a href="#" onclick="showSection('marketing')">
+                    <i class="fas fa-bullhorn"></i> Marketing
+                </a></li>
+                <li><a href="#" onclick="showSection('settings')">
+                    <i class="fas fa-cog"></i> Configuración
+                </a></li>
+            </ul>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <span id="userEmail"></span>
+                    <span id="userBusiness"></span>
+                </div>
+                <button onclick="logout()" class="btn btn-secondary">
+                    Cerrar Sesión
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Overview Section -->
+            <section id="overview" class="section active">
+
+
+                <div class="section-header">
+                    <h1>Resumen del Dashboard</h1>
+                    <p>Panel de control principal</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalAppointments">12</h3>
+                            <p>Citas Este Mes</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-message"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalMessages">156</h3>
+                            <p>Mensajes Procesados</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="avgResponse">2.3 min</h3>
+                            <p>Tiempo Promedio</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-thumbs-up"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="satisfaction">94%</h3>
+                            <p>Satisfacción</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <h3>Actividad de Conversaciones</h3>
+                    <canvas id="conversationsChart"></canvas>
+                </div>
+            </section>
+
+            <!-- Appointments Section -->
+            <section id="appointments" class="section">
+                <div class="section-header">
+                    <h1>Gestión de Citas</h1>
+                    <button onclick="openAppointmentModal()" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Nueva Cita
+                    </button>
+                </div>
+
+                <div class="table-container">
+                    <table id="appointmentsTable">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Teléfono</th>
+                                <th>Fecha</th>
+                                <th>Hora</th>
+                                <th>Servicio</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="appointmentsTableBody">
+                            <!-- Las citas se cargarán dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Modal para Añadir Cita -->
+            <div id="addAppointmentModal" class="modal">
+                <div class="modal-content appointment-modal">
+                    <div class="appointment-modal-header">
+                        <div class="appointment-modal-title">
+                            <i class="fas fa-calendar-plus"></i>
+                            <span>Nueva Cita</span>
+                        </div>
+                        <button onclick="closeAddAppointmentModal()" class="appointment-close-btn">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="appointment-modal-body">
+                        <form id="addAppointmentForm">
+                            <div class="appointment-form-row">
+                                <div class="appointment-form-group">
+                                    <label for="appointmentCustomerName">Nombre Completo *</label>
+                                    <input type="text" id="appointmentCustomerName" name="customer_name" required class="appointment-input">
+                                </div>
+                                <div class="appointment-form-group">
+                                    <label for="appointmentCustomerEmail">Email *</label>
+                                    <input type="email" id="appointmentCustomerEmail" name="customer_email" required class="appointment-input">
+                                </div>
+                            </div>
+                            <div class="appointment-form-row">
+                                <div class="appointment-form-group">
+                                    <label for="appointmentCustomerPhone">Teléfono *</label>
+                                    <input type="tel" id="appointmentCustomerPhone" name="customer_phone" required class="appointment-input">
+                                </div>
+                                <div class="appointment-form-group">
+                                    <label for="appointmentService">Estado</label>
+                                    <select id="appointmentService" name="service" class="appointment-select">
+                                        <option value="Nuevo">Nuevo</option>
+                                        <option value="Confirmado">Confirmado</option>
+                                        <option value="Completado">Completado</option>
+                                        <option value="Cancelado">Cancelado</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="appointment-form-row">
+                                <div class="appointment-form-group">
+                                    <label for="appointmentDate">Fecha *</label>
+                                    <input type="date" id="appointmentDate" name="appointment_date" required class="appointment-input">
+                                </div>
+                                <div class="appointment-form-group">
+                                    <label for="appointmentTime">Hora *</label>
+                                    <input type="time" id="appointmentTime" name="appointment_time" required class="appointment-input">
+                                </div>
+                            </div>
+                            <div class="appointment-form-group appointment-form-full">
+                                <label for="appointmentNotes">Notas (opcional)</label>
+                                <textarea id="appointmentNotes" name="notes" placeholder="Información adicional sobre la cita..." class="appointment-textarea"></textarea>
+                            </div>
+                            <div class="appointment-modal-actions">
+                                <button type="button" onclick="closeAddAppointmentModal()" class="appointment-btn appointment-btn-cancel">
+                                    Cancelar
+                                </button>
+                                <button type="submit" class="appointment-btn appointment-btn-save">
+                                    <i class="fas fa-save"></i> Guardar Cita
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conversations Section -->
+            <section id="conversations" class="section">
+                <div class="section-header">
+                    <h1>Conversaciones Multi-Canal</h1>
+                    <p>WhatsApp, Telegram y Email unificados</p>
+                </div>
+
+                <!-- Estadísticas Generales -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalConversations">44</h3>
+                            <p>Total Conversaciones</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="automaticResponses">35</h3>
+                            <p>Respuestas Automáticas</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="avgResponseTime">2.1 min</h3>
+                            <p>Tiempo Promedio</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="responseRate">79%</h3>
+                            <p>Tasa de Respuesta</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Estadísticas por Canal -->
+                <div class="channel-stats-grid">
+                    <div class="channel-stat-card whatsapp" onclick="openChannelDetails('whatsapp')" style="cursor: pointer;">
+                        <div class="channel-header">
+                            <i class="fab fa-whatsapp"></i>
+                            <h3>WhatsApp</h3>
+                        </div>
+                        <div class="channel-metrics">
+                            <div class="metric">
+                                <span class="metric-number" id="whatsappConversations">24</span>
+                                <span class="metric-label">Conversaciones</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-number" id="whatsappResponses">18</span>
+                                <span class="metric-label">Respuestas</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="channel-stat-card telegram" onclick="openChannelDetails('telegram')" style="cursor: pointer;">
+                        <div class="channel-header">
+                            <i class="fab fa-telegram"></i>
+                            <h3>Telegram</h3>
+                        </div>
+                        <div class="channel-metrics">
+                            <div class="metric">
+                                <span class="metric-number" id="telegramConversations">12</span>
+                                <span class="metric-label">Conversaciones</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-number" id="telegramResponses">10</span>
+                                <span class="metric-label">Respuestas</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="channel-stat-card email" onclick="openChannelDetails('email')" style="cursor: pointer;">
+                        <div class="channel-header">
+                            <i class="fas fa-envelope"></i>
+                            <h3>Email</h3>
+                        </div>
+                        <div class="channel-metrics">
+                            <div class="metric">
+                                <span class="metric-number" id="emailConversations">8</span>
+                                <span class="metric-label">Conversaciones</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-number" id="emailResponses">7</span>
+                                <span class="metric-label">Respuestas</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="channel-stat-card calls" onclick="openChannelDetails('calls')" style="cursor: pointer;">
+                        <div class="channel-header">
+                            <i class="fas fa-phone"></i>
+                            <h3>Llamadas</h3>
+                        </div>
+                        <div class="channel-metrics">
+                            <div class="metric">
+                                <span class="metric-number" id="callsConversations">5</span>
+                                <span class="metric-label">Conversaciones</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-number" id="callsResponses">4</span>
+                                <span class="metric-label">Respuestas</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lista de Conversaciones -->
+                <div class="conversations-list">
+                    <div class="section-header">
+                        <h3>Conversaciones Recientes</h3>
+                        <div class="conversations-filters">
+                            <select id="channelFilter" onchange="filterConversations()">
+                                <option value="">Todos los canales</option>
+                                <option value="whatsapp">WhatsApp</option>
+                                <option value="telegram">Telegram</option>
+                                <option value="email">Email</option>
+                                <option value="calls">Llamadas</option>
+                            </select>
+                            <select id="statusFilter" onchange="filterConversations()">
+                                <option value="">Todos los estados</option>
+                                <option value="respondido">Respondido</option>
+                                <option value="pendiente">Pendiente</option>
+                                <option value="visto">Visto</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Contacto</th>
+                                    <th>Último Mensaje</th>
+                                    <th>Respuesta</th>
+                                    <th>Hora</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="conversationsTableBody">
+                                <!-- Las conversaciones se cargarán dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Customers Section -->
+            <section id="customers" class="section">
+                <div class="section-header">
+                    <h1>Gestión de Clientes</h1>
+                    <button onclick="openAddCustomerModal()" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i> Añadir Cliente
+                    </button>
+                </div>
+
+                <div class="customers-stats">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalCustomers">47</h3>
+                            <p>Total Clientes</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="newCustomersMonth">12</h3>
+                            <p>Nuevos Este Mes</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="vipCustomers">8</h3>
+                            <p>Clientes VIP</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="customers-filters">
+                    <div class="search-container">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="customerSearch" placeholder="Buscar por nombre, email o teléfono..." class="search-input">
+                    </div>
+                    <select id="customerFilter" class="filter-select">
+                        <option value="all">Todos los clientes</option>
+                        <option value="new">Nuevos</option>
+                        <option value="vip">VIP</option>
+                        <option value="inactive">Inactivos</option>
+                    </select>
+                    <button onclick="exportCustomers()" class="btn btn-outline">
+                        <i class="fas fa-download"></i> Exportar
+                    </button>
+                </div>
+
+                <div class="table-container">
+                    <table id="customersTable">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Email</th>
+                                <th>Teléfono</th>
+                                <th>WhatsApp</th>
+                                <th>Telegram</th>
+                                <th>Registro</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customersTableBody">
+                            <!-- Los clientes se cargarán dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Marketing Section -->
+            <section id="marketing" class="section">
+                <div class="section-header">
+                    <h1>Marketing Automatizado</h1>
+                    <button onclick="openCampaignModal()" class="btn btn-primary">
+                        <i class="fas fa-rocket"></i> Nueva Campaña
+                    </button>
+                </div>
+
+                <div class="marketing-stats">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-paper-plane"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalCampaigns">3</h3>
+                            <p>Campañas Activas</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="openRate">68%</h3>
+                            <p>Tasa de Apertura</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-mouse-pointer"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="clickRate">24%</h3>
+                            <p>Tasa de Clics</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="marketing-channels">
+                    <h3>Canales de Marketing</h3>
+                    <div class="channels-grid">
+                        <div class="channel-card" onclick="setupEmailMarketing()">
+                            <i class="fas fa-envelope"></i>
+                            <h4>Email Marketing</h4>
+                            <p>Campañas por correo electrónico</p>
+                            <span class="channel-status active">Activo</span>
+                        </div>
+
+                        <div class="channel-card" onclick="setupWhatsAppMarketing()">
+                            <i class="fab fa-whatsapp"></i>
+                            <h4>WhatsApp Marketing</h4>
+                            <p>Mensajes masivos por WhatsApp</p>
+                            <span class="channel-status active">Activo</span>
+                        </div>
+
+                        <div class="channel-card" onclick="setupTelegramMarketing()">
+                            <i class="fab fa-telegram"></i>
+                            <h4>Telegram Marketing</h4>
+                            <p>Difusión por Telegram</p>
+                            <span class="channel-status inactive">Configurar</span>
+                        </div>
+
+                        <div class="channel-card" onclick="viewAllCampaigns()">
+                            <i class="fas fa-history"></i>
+                            <h4>Campañas Recientes</h4>
+                            <p>Historial y estadísticas</p>
+                            <span class="channel-status active">Ver Todas</span>
+                        </div>
+                    </div>
+                </div>
+
+
+            </section>
+
+            <!-- Settings Section -->
+            <section id="settings" class="section">
+                <div class="section-header">
+                    <h1>Configuración</h1>
+                </div>
+
+                <div class="settings-content">
+                    <div class="settings-group">
+                        <h3>Información del Negocio</h3>
+                        <form id="businessSettingsForm">
+                            <div class="form-group">
+                                <label for="settingsBusinessName">Nombre del Negocio</label>
+                                <input type="text" id="settingsBusinessName" name="business_name">
+                            </div>
+                            <div class="form-group">
+                                <label for="settingsPhone">Teléfono</label>
+                                <input type="tel" id="settingsPhone" name="phone">
+                            </div>
+                            <div class="form-group">
+                                <label for="settingsEmail">Email</label>
+                                <input type="email" id="settingsEmail" name="email">
+                            </div>
+                            <div class="form-group">
+                                <label for="businessNiche">Sector del Negocio</label>
+                                <select id="businessNiche" name="niche">
+                                    <option value="">Seleccionar sector</option>
+                                    <option value="clinicas">Clínicas</option>
+                                    <option value="gestorias">Gestorías</option>
+                                    <option value="administradores">Administradores de Fincas</option>
+                                    <option value="ecommerce">E-Commerce</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Guardar Cambios
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="settings-group">
+                        <h3 style="text-align: center;">Configuración de Canales</h3>
+                        <div class="channels-grid">
+                            <div class="channel-card">
+                                <div class="channel-icon whatsapp-icon">
+                                    <i class="fab fa-whatsapp"></i>
+                                </div>
+                                <h4>WhatsApp</h4>
+                                <button class="btn btn-primary btn-sm" onclick="configureWhatsApp()">
+                                    Configurar
+                                </button>
+                            </div>
+
+                            <div class="channel-card">
+                                <div class="channel-icon telegram-icon">
+                                    <i class="fab fa-telegram"></i>
+                                </div>
+                                <h4>Telegram Bot</h4>
+                                <button class="btn btn-primary btn-sm" onclick="configureTelegram()">
+                                    Configurar
+                                </button>
+                            </div>
+
+                            <div class="channel-card">
+                                <div class="channel-icon email-icon">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                                <h4>Email SMTP</h4>
+                                <button class="btn btn-primary btn-sm" onclick="configureEmail()">
+                                    Configurar
+                                </button>
+                            </div>
+
+                            <div class="channel-card">
+                                <div class="channel-icon calls-icon">
+                                    <i class="fas fa-phone"></i>
+                                </div>
+                                <h4>Llamadas</h4>
+                                <button class="btn btn-primary btn-sm" onclick="configureCalls()">
+                                    Configurar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Demo Modal -->
+    <div id="demoModal" class="modal demo-modal">
+        <div class="modal-content demo-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-robot"></i> Demo en Vivo - AIAsistentPro</h2>
+                <button onclick="closeDemoModal()" class="close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="demo-info">
+                    <p><strong>¡Prueba nuestro asistente virtual!</strong> Haz preguntas como:</p>
+                    <div class="demo-suggestions">
+                        <button onclick="sendDemoMessage('¿Qué servicios ofrecen?')" class="demo-suggestion">¿Qué servicios ofrecen?</button>
+                        <button onclick="sendDemoMessage('Quiero agendar una cita')" class="demo-suggestion">Quiero agendar una cita</button>
+                        <button onclick="sendDemoMessage('¿Cuáles son sus horarios?')" class="demo-suggestion">¿Cuáles son sus horarios?</button>
+                        <button onclick="sendDemoMessage('¿Cuánto cuesta una consulta?')" class="demo-suggestion">¿Cuánto cuesta una consulta?</button>
+                    </div>
+                </div>
+
+                <div class="demo-chat-container">
+                    <div class="demo-chat-header">
+                        <div class="assistant-info">
+                            <i class="fas fa-robot"></i>
+                            <span>Asistente Virtual</span>
+                            <div class="status-online"></div>
+                        </div>
+                    </div>
+
+                    <div id="demoChatMessages" class="demo-chat-messages">
+                        <div class="demo-message bot">
+                            <div class="message-avatar">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="message-content">
+                                ¡Hola! Soy tu asistente virtual de AIAsistentPro. ¿En qué puedo ayudarte hoy? 😊
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="demoTypingIndicator" class="demo-typing-indicator hidden">
+                        <div class="message-avatar">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="typing-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+
+                    <div class="demo-chat-input">
+                        <input type="text" id="demoMessageInput" placeholder="Escribe tu pregunta aquí..." onkeypress="handleDemoEnter(event)">
+                        <button onclick="sendDemoUserMessage()" class="send-btn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Customer Modal -->
+    <div id="addCustomerModal" class="modal">
+        <div class="modal-content customer-modal">
+            <div class="customer-modal-header">
+                <div class="customer-modal-title">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Añadir Nuevo Cliente</span>
+                </div>
+                <button onclick="closeAddCustomerModal()" class="customer-close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="customer-modal-body">
+                <form id="addCustomerForm">
+                    <div class="customer-form-row">
+                        <div class="customer-form-group">
+                            <label for="customerName">Nombre Completo *</label>
+                            <input type="text" id="customerName" name="name" required class="customer-input">
+                        </div>
+                        <div class="customer-form-group">
+                            <label for="customerEmail">Email *</label>
+                            <input type="email" id="customerEmail" name="email" required class="customer-input">
+                        </div>
+                    </div>
+                    <div class="customer-form-row">
+                        <div class="customer-form-group">
+                            <label for="customerPhone">Teléfono *</label>
+                            <input type="tel" id="customerPhone" name="phone" required class="customer-input">
+                        </div>
+                        <div class="customer-form-group">
+                            <label for="customerStatus">Estado</label>
+                            <select id="customerStatus" name="status" class="customer-select">
+                                <option value="nuevo">Nuevo</option>
+                                <option value="activo">Activo</option>
+                                <option value="vip">VIP</option>
+                                <option value="inactivo">Inactivo</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="customer-form-group customer-form-full">
+                        <label for="customerNotes">Notas (opcional)</label>
+                        <textarea id="customerNotes" name="notes" placeholder="Información adicional sobre el cliente..." class="customer-textarea"></textarea>
+                    </div>
+                    <div class="customer-checkboxes">
+                        <div class="customer-checkbox-item">
+                            <input type="checkbox" id="customerWhatsApp" name="whatsapp" class="customer-checkbox">
+                            <label for="customerWhatsApp" class="customer-checkbox-label">
+                                <i class="fab fa-whatsapp"></i> Habilitar WhatsApp
+                            </label>
+                        </div>
+                        <div class="customer-checkbox-item">
+                            <input type="checkbox" id="customerTelegram" name="telegram" class="customer-checkbox">
+                            <label for="customerTelegram" class="customer-checkbox-label">
+                                <i class="fab fa-telegram"></i> Habilitar Telegram
+                            </label>
+                        </div>
+                    </div>
+                    <div class="customer-modal-actions">
+                        <button type="button" onclick="closeAddCustomerModal()" class="customer-btn customer-btn-cancel">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="customer-btn customer-btn-save">
+                            <i class="fas fa-save"></i> Guardar Cliente
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notifications" class="notifications-container"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contacto - AIAsistentPro</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-brand">
+                <i class="fas fa-robot"></i>
+                <span>AIAsistentPro</span>
+            </div>
+            <div class="nav-links">
+                <a href="/">Inicio</a>
+                <a href="/#features">Funcionalidades</a>
+                <a href="/#pricing">Precios</a>
+                <a href="/contact.html" class="active">Contacto</a>
+                <button class="btn btn-primary" onclick="showLoginModal()">
+                    Acceder
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Contact Section -->
+    <section class="contact" style="padding-top: 120px;">
+        <div class="container">
+            <h2>Contacta con Nosotros</h2>
+            <p class="section-subtitle">¿Tienes preguntas? Estamos aquí para ayudarte</p>
+
+            <div class="contact-content">
+                <div class="contact-info-grid">
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <h3>Email</h3>
+                        <p>hola@aiasistentpro.com</p>
+                        <p>Respuesta en 24 horas</p>
+                    </div>
+
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <h3>Teléfono</h3>
+                        <p>+34 900 123 456</p>
+                        <p>Lun-Vie 9:00-18:00</p>
+                    </div>
+
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fab fa-whatsapp"></i>
+                        </div>
+                        <h3>WhatsApp</h3>
+                        <p>+34 600 123 456</p>
+                        <p>Disponible 24/7</p>
+                    </div>
+
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <h3>Oficina</h3>
+                        <p>Madrid, España</p>
+                        <p>Cita previa</p>
+                    </div>
+                </div>
+
+                <div class="contact-form-container">
+                    <h3>Envíanos un Mensaje</h3>
+                    <form id="contactForm" class="contact-form" onsubmit="handleContactForm(event)">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="name">Nombre *</label>
+                                <input type="text" id="name" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email *</label>
+                                <input type="email" id="email" name="email" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="phone">Teléfono</label>
+                                <input type="tel" id="phone" name="phone">
+                            </div>
+                            <div class="form-group">
+                                <label for="company">Empresa</label>
+                                <input type="text" id="company" name="company">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="subject">Asunto *</label>
+                            <select id="subject" name="subject" required>
+                                <option value="">Selecciona un asunto</option>
+                                <option value="informacion">Información general</option>
+                                <option value="demo">Solicitar demo</option>
+                                <option value="precios">Consulta de precios</option>
+                                <option value="soporte">Soporte técnico</option>
+                                <option value="partnership">Partnership</option>
+                                <option value="otro">Otro</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="message">Mensaje *</label>
+                            <textarea id="message" name="message" rows="5" required placeholder="Cuéntanos cómo podemos ayudarte..."></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Enviar Mensaje
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-main">
+                <div class="footer-brand">
+                    <div class="brand-logo">
+                        <i class="fas fa-robot"></i>
+                        <span>AIAsistentPro</span>
+                    </div>
+                    <p>La plataforma de automatización más completa para tu negocio</p>
+                </div>
+
+                <div class="footer-nav">
+                    <div class="footer-section">
+                        <h4>Producto</h4>
+                        <a href="/#features">Funcionalidades</a>
+                        <a href="/#pricing">Precios</a>
+                        <a href="#" onclick="showDemo()">Demo en Vivo</a>
+                        <a href="#" onclick="showIntegrations()">Integraciones</a>
+                    </div>
+
+                    <div class="footer-section">
+                        <h4>Sectores</h4>
+                        <a href="/#" onclick="selectNiche('clinicas')">Clínicas</a>
+                        <a href="/#" onclick="selectNiche('gestorias')">Gestorías</a>
+                        <a href="/#" onclick="selectNiche('administradores')">Administradores</a>
+                        <a href="#" onclick="showMoreNiches()">Más Sectores</a>
+                    </div>
+
+                    <div class="footer-section">
+                        <h4>Soporte</h4>
+                        <a href="#" onclick="showHelp()">Centro de Ayuda</a>
+                        <a href="/contact.html" class="active">Contacto</a>
+                        <a href="#" onclick="showAPI()">Documentación API</a>
+                        <a href="#" onclick="showStatus()">Estado del Servicio</a>
+                    </div>
+
+                    <div class="footer-section">
+                        <h4>Empresa</h4>
+                        <a href="#" onclick="showAbout()">Sobre Nosotros</a>
+                        <a href="#" onclick="showBlog()">Blog</a>
+                        <a href="#" onclick="showCareers()">Carreras</a>
+                        <a href="#" onclick="showPress()">Prensa</a>
+                    </div>
+
+                    <div class="footer-section contact-info">
+                        <h4>Contacto</h4>
+                        <div class="contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <span>hola@aiasistentpro.com</span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-phone"></i>
+                            <span>+34 900 123 456</span>
+                        </div>
+                        <div class="social-links">
+                            <a href="#" onclick="openSocial('twitter')"><i class="fab fa-twitter"></i></a>
+                            <a href="#" onclick="openSocial('linkedin')"><i class="fab fa-linkedin"></i></a>
+                            <a href="#" onclick="openSocial('facebook')"><i class="fab fa-facebook"></i></a>
+                            <a href="#" onclick="openSocial('instagram')"><i class="fab fa-instagram"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="legal-links">
+                    <a href="#" onclick="showPrivacy()">Política de Privacidad</a>
+                    <a href="#" onclick="showTerms()">Términos de Servicio</a>
+                    <a href="#" onclick="showCookies()">Política de Cookies</a>
+                    <a href="#" onclick="showGDPR()">RGPD</a>
+                </div>
+                <p>&copy; 2024 AIAsistentPro. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-robot"></i> AIAsistentPro</h2>
+                <button onclick="closeModal()" class="close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="tabs">
+                    <button class="tab-button active" onclick="openTab('login')">Iniciar Sesión</button>
+                    <button class="tab-button" onclick="openTab('register')">Registrarse</button>
+                </div>
+
+                <!-- Login Tab -->
+                <div id="login" class="tab-content active">
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label for="loginEmail">Email</label>
+                            <input type="email" id="loginEmail" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="loginPassword">Contraseña</label>
+                            <input type="password" id="loginPassword" name="password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            Iniciar Sesión
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Register Tab -->
+                <div id="register" class="tab-content">
+                    <form id="registerForm">
+                        <div class="form-group">
+                            <label for="regEmail">Email</label>
+                            <input type="email" id="regEmail" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="regPassword">Contraseña</label>
+                            <input type="password" id="regPassword" name="password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="businessName">Nombre del Negocio</label>
+                            <input type="text" id="businessName" name="business_name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Teléfono (opcional)</label>
+                            <input type="tel" id="phone" name="phone">
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-user-plus"></i> Registrarse
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notifications" class="notifications-container"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>

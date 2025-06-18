@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pago Seguro - AIAsistentPro</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+    <div class="payment-container">
+        <!-- Header -->
+        <header class="payment-header">
+            <div class="container">
+                <div class="logo">
+                    <h1><i class="fas fa-robot"></i> AIAsistentPro</h1>
+                </div>
+                <div class="secure-badge">
+                    <i class="fas fa-lock"></i>
+                    <span>Pago 100% Seguro</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="payment-main">
+            <div class="container">
+                <div class="payment-content">
+                    <!-- Plan Summary -->
+                    <div class="plan-summary-compact">
+                        <h2>Resumen del Plan</h2>
+                        <div id="planInfo" class="plan-info">
+                            <!-- Se llenará dinámicamente -->
+                        </div>
+                        <div class="total-amount">
+                            <span>Total a pagar:</span>
+                            <span id="totalAmount" class="amount">€0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- Payment Form -->
+                    <div class="payment-form-compact">
+                        <h3>Datos del Cliente</h3>
+
+                        <form id="paymentForm" class="compact-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="customerName">Nombre Completo *</label>
+                                    <input type="text" id="customerName" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="customerEmail">Email *</label>
+                                    <input type="email" id="customerEmail" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="customerPhone">Teléfono</label>
+                                    <input type="tel" id="customerPhone">
+                                </div>
+                                <div class="form-group">
+                                    <label for="businessName">Empresa</label>
+                                    <input type="text" id="businessName">
+                                </div>
+                            </div>
+
+                            <h3 class="payment-methods-title">Método de Pago</h3>
+
+                            <!-- Payment Methods -->
+                            <div class="payment-methods-compact">
+                                <label class="payment-method-compact active">
+                                    <input type="radio" name="paymentMethod" value="card" checked>
+                                    <div class="method-icon">
+                                        <i class="fas fa-credit-card"></i>
+                                    </div>
+                                    <span>Tarjeta</span>
+                                    <div class="card-icons">
+                                        <i class="fab fa-cc-visa"></i>
+                                        <i class="fab fa-cc-mastercard"></i>
+                                    </div>
+                                </label>
+
+                                <label class="payment-method-compact">
+                                    <input type="radio" name="paymentMethod" value="paypal">
+                                    <div class="method-icon">
+                                        <i class="fab fa-paypal"></i>
+                                    </div>
+                                    <span>PayPal</span>
+                                </label>
+
+                                <label class="payment-method-compact">
+                                    <input type="radio" name="paymentMethod" value="bank">
+                                    <div class="method-icon">
+                                        <i class="fas fa-university"></i>
+                                    </div>
+                                    <span>Transferencia</span>
+                                </label>
+                            </div>
+
+                            <!-- Card Payment -->
+                            <div id="cardPaymentSection" class="payment-section">
+                                <div class="form-group">
+                                    <label for="fallback-card-number">Número de Tarjeta *</label>
+                                    <input type="text" 
+                                           id="fallback-card-number" 
+                                           placeholder="1234 1234 1234 1234" 
+                                           maxlength="19"
+                                           class="card-input-compact"
+                                           autocomplete="cc-number">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="cardholderName">Nombre del Titular *</label>
+                                    <input type="text" id="cardholderName" class="card-input-compact" placeholder="Nombre como aparece en la tarjeta">
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="fallback-card-expiry">Fecha de Caducidad *</label>
+                                        <input type="text" 
+                                               id="fallback-card-expiry" 
+                                               placeholder="MM/AA" 
+                                               maxlength="5"
+                                               class="card-input-compact"
+                                               autocomplete="cc-exp">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="fallback-card-cvc">CVC *</label>
+                                        <input type="text" 
+                                               id="fallback-card-cvc" 
+                                               placeholder="123" 
+                                               maxlength="4"
+                                               class="card-input-compact"
+                                               autocomplete="cc-csc">
+                                    </div>
+                                </div>
+                                
+                                <div id="card-errors" class="card-errors"></div>
+                            </div>
+
+                            <!-- PayPal Section -->
+                            <div id="paypalPaymentSection" class="payment-section" style="display: none;">
+                                <div id="paypal-button-container">
+                                    <!-- PayPal content will be inserted here -->
+                                </div>
+                            </div>
+
+                            <!-- Bank Transfer Section -->
+                            <div id="bankPaymentSection" class="payment-section" style="display: none;">
+                                <!-- Bank transfer content will be inserted here -->
+                            </div>
+
+                            <!-- Terms -->
+                            <div class="terms-compact">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="acceptTerms" required>
+                                    <span class="checkbox-text">Acepto los <a href="#" onclick="openTermsModal(); return false;" class="terms-link">términos y condiciones</a></span>
+                                </label>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <button type="submit" id="submitPayment" class="payment-btn-compact" disabled>
+                                <i class="fas fa-lock"></i>
+                                <span>Procesar Pago</span>
+                                <div class="btn-amount" id="btnAmount">€0.00</div>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h3>Procesando pago...</h3>
+        </div>
+    </div>
+
+    <!-- Terms and Conditions Modal -->
+    <div id="termsModal" class="modal terms-modal" style="display: none;">
+        <div class="modal-content terms-modal-content">
+            <div class="modal-header">
+                <h2>Términos y Condiciones</h2>
+                <button onclick="closeTermsModal()" class="close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body terms-modal-body">
+                <div class="terms-content">
+                    <h3>1. Aceptación de los Términos</h3>
+                    <p>Al acceder y utilizar nuestros servicios, usted acepta estar sujeto a estos términos y condiciones de uso, que se aplicarán a todos los usuarios del servicio.</p>
+                    
+                    <h3>2. Descripción del Servicio</h3>
+                    <p>AIAsistentPro proporciona servicios de asistente virtual automatizado para empresas, incluyendo gestión de citas, atención al cliente y marketing automatizado.</p>
+                    
+                    <h3>3. Planes y Facturación</h3>
+                    <p>Los precios mostrados incluyen todos los impuestos aplicables. Los pagos se procesan de forma segura y las suscripciones se renuevan automáticamente según el plan seleccionado.</p>
+                    
+                    <h3>4. Política de Privacidad</h3>
+                    <p>Nos comprometemos a proteger su privacidad. Los datos personales se procesan de acuerdo con el RGPD y nuestra política de privacidad.</p>
+                    
+                    <h3>5. Derecho de Desistimiento</h3>
+                    <p>Conforme a la legislación europea, tiene derecho a cancelar su compra dentro de los 14 días siguientes sin necesidad de justificación.</p>
+                    
+                    <h3>6. Limitación de Responsabilidad</h3>
+                    <p>El servicio se proporciona "tal como está". No garantizamos que el servicio sea ininterrumpido o libre de errores.</p>
+                    
+                    <h3>7. Modificaciones</h3>
+                    <p>Nos reservamos el derecho de modificar estos términos en cualquier momento. Los cambios se notificarán a los usuarios registrados.</p>
+                    
+                    <h3>8. Ley Aplicable</h3>
+                    <p>Estos términos se rigen por las leyes españolas y de la Unión Europea. Cualquier disputa se resolverá en los tribunales competentes de España.</p>
+                    
+                    <h3>9. Contacto</h3>
+                    <p>Para cualquier consulta sobre estos términos, puede contactarnos a través de nuestro formulario de contacto o por email.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="acceptTermsFromModal()" class="btn btn-primary">
+                    Acepto los Términos
+                </button>
+                <button onclick="closeTermsModal()" class="btn btn-secondary">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal success-modal" style="display: none;">
+        <div class="modal-content">
+            <div class="success-header">
+                <i class="fas fa-check-circle"></i>
+                <h2>¡Pago Exitoso!</h2>
+                <p>Tu suscripción ha sido activada</p>
+            </div>
+            <div class="success-footer">
+                <button onclick="goToDashboard()" class="btn btn-primary">
+                    Ir al Dashboard
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="payment.js"></script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selecciona tu Tipo de Negocio - AIAsistentPro</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="business-selection-page">
+        <header class="selection-header">
+            <div class="nav-brand">
+                <i class="fas fa-robot"></i>
+                <span>AIAsistentPro</span>
+            </div>
+        </header>
+
+        <main class="selection-main">
+            <div class="selection-container">
+                <div class="selection-intro">
+                    <h1>¿Qué tipo de negocio tienes?</h1>
+                    <p>Selecciona tu industria para personalizar tu experiencia con AIAsistentPro</p>
+                </div>
+
+                <div class="business-types-grid" id="businessTypesGrid">
+                    <!-- Las opciones se cargarán dinámicamente -->
+                </div>
+
+                <div class="selection-footer">
+                    <p>¿No encuentras tu tipo de negocio? <a href="contact.html">Contáctanos</a> y te ayudamos</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Cargar tipos de negocio
+        async function loadBusinessTypes() {
+            try {
+                const response = await fetch('/api/payments/business-types');
+                const data = await response.json();
+                
+                const grid = document.getElementById('businessTypesGrid');
+                grid.innerHTML = '';
+                
+                data.business_types.forEach(type => {
+                    const card = document.createElement('div');
+                    card.className = 'business-type-card';
+                    card.onclick = () => selectBusinessType(type.id);
+                    
+                    card.innerHTML = `
+                        <div class="business-icon" style="color: ${type.color}">
+                            <i class="${type.icon}"></i>
+                        </div>
+                        <h3>${type.name}</h3>
+                        <p>${type.description}</p>
+                        <div class="select-button">
+                            <span>Seleccionar</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </div>
+                    `;
+                    
+                    grid.appendChild(card);
+                });
+                
+            } catch (error) {
+                console.error('Error loading business types:', error);
+            }
+        }
+        
+        function selectBusinessType(businessType) {
+            localStorage.setItem('selectedBusinessType', businessType);
+            window.location.href = `pricing.html?business_type=${businessType}`;
+        }
+        
+        // Cargar al iniciar
+        document.addEventListener('DOMContentLoaded', loadBusinessTypes);
+    </script>
+</body>
+</html>

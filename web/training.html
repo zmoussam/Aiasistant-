@@ -1,0 +1,235 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrenar IA - AIAsistentPro</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="training-page">
+        <header class="dashboard-header" style="padding: 20px 0; text-align: center; display: flex; flex-direction: column; align-items: center;">
+            <div class="nav-brand" style="margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <i class="fas fa-robot" style="font-size: 28px;"></i>
+                <span style="font-size: 24px; font-weight: bold;">AIAsistentPro</span>
+            </div>
+            <div class="header-actions">
+                <button onclick="window.location.href='index.html'" class="btn btn-secondary" style="margin: 0 auto; padding: 12px 24px;">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </button>
+            </div>
+        </header>
+
+        <main class="training-main">
+            <div class="container">
+                <div class="training-header">
+                    <h1><i class="fas fa-brain"></i> Entrenar tu IA Personalizada</h1>
+                    <p>Enseña a tu asistente virtual información específica de tu negocio</p>
+                </div>
+
+                <div class="training-tabs">
+                    <button class="tab-btn active" onclick="showTab('manual')">
+                        <i class="fas fa-edit"></i> Entrenamiento Manual
+                    </button>
+                    <button class="tab-btn" onclick="showTab('templates')">
+                        <i class="fas fa-template"></i> Plantillas
+                    </button>
+                    <button class="tab-btn" onclick="showTab('bulk')">
+                        <i class="fas fa-upload"></i> Carga Masiva
+                    </button>
+                    <button class="tab-btn" onclick="showTab('knowledge')">
+                        <i class="fas fa-database"></i> Base de Conocimientos
+                    </button>
+                </div>
+
+                <!-- Entrenamiento Manual -->
+                <div id="manual-tab" class="tab-content active">
+                    <div class="training-section">
+                        <h3>Agregar Nueva Pregunta y Respuesta</h3>
+                        <form id="trainingForm" class="training-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="trainingType">Tipo</label>
+                                    <select id="trainingType" name="training_type" required>
+                                        <option value="faq">Pregunta Frecuente</option>
+                                        <option value="product_info">Información de Producto</option>
+                                        <option value="service_info">Información de Servicio</option>
+                                        <option value="process_info">Información de Proceso</option>
+                                        <option value="custom_response">Respuesta Personalizada</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="trainingCategory">Categoría</label>
+                                    <input type="text" id="trainingCategory" name="category" 
+                                           placeholder="ej: Citas y Horarios">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="trainingQuestion">Pregunta del Cliente</label>
+                                <textarea id="trainingQuestion" name="question" required
+                                         placeholder="¿Cómo puedo agendar una cita?"></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="trainingAnswer">Respuesta del Asistente</label>
+                                <textarea id="trainingAnswer" name="answer" required
+                                         placeholder="Puedes agendar tu cita llamando al..."></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="trainingKeywords">Palabras Clave (separadas por comas)</label>
+                                <input type="text" id="trainingKeywords" name="keywords"
+                                       placeholder="cita, agendar, reservar, appointment">
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Agregar Entrenamiento
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Plantillas -->
+                <div id="templates-tab" class="tab-content">
+                    <div class="training-section">
+                        <h3>Plantillas por Sector</h3>
+                        <p>Usa estas plantillas predefinidas para tu tipo de negocio</p>
+                        
+                        <div class="templates-container">
+                            <div class="template-selector">
+                                <label for="businessTypeSelect">Selecciona tu sector:</label>
+                                <select id="businessTypeSelect" onchange="loadTemplates()">
+                                    <option value="">Seleccionar...</option>
+                                    <option value="clinic">Clínicas y Consultorios</option>
+                                    <option value="management">Gestorías</option>
+                                    <option value="property_admin">Administradores de Fincas</option>
+                                    <option value="ecommerce">E-commerce</option>
+                                </select>
+                                <button id="autoTrainBtn" class="btn btn-success" onclick="autoTrainAssistant()" style="margin-left: 15px; display: none;">
+                                    <i class="fas fa-magic"></i> Entrenar Automáticamente
+                                </button>
+                            </div></div>
+                            
+                            <div id="templatesContainer" class="templates-grid"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Carga Masiva -->
+                <div id="bulk-tab" class="tab-content">
+                    <div class="training-section">
+                        <h3>Carga Masiva de Datos</h3>
+                        
+                        <div class="bulk-options">
+                            <div class="bulk-option">
+                                <h4><i class="fas fa-file-text"></i> Analizar Contenido</h4>
+                                <p>Pega el contenido de tu sitio web o documentos para generar automáticamente preguntas y respuestas</p>
+                                <form id="contentAnalysisForm">
+                                    <div class="form-group">
+                                        <label for="contentText">Contenido a Analizar</label>
+                                        <textarea id="contentText" name="content" 
+                                                 placeholder="Pega aquí el contenido de tu sitio web, folletos, etc."></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-magic"></i> Analizar y Generar Q&A
+                                    </button>
+                                </form>
+                            </div>
+                            
+                            <div class="bulk-option">
+                                <h4><i class="fas fa-file-csv"></i> Importar CSV/JSON</h4>
+                                <p>Sube un archivo con tus preguntas y respuestas</p>
+                                <input type="file" id="bulkFileInput" accept=".csv,.json" onchange="handleFileUpload()">
+                                <div class="file-format-help">
+                                    <small>
+                                        Formato esperado: question, answer, category, keywords
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Base de Conocimientos -->
+                <div id="knowledge-tab" class="tab-content">
+                    <div class="training-section">
+                        <h3>Base de Conocimientos Actual</h3>
+                        
+                        <div class="knowledge-stats">
+                            <div class="stat-card">
+                                <i class="fas fa-question-circle"></i>
+                                <div class="stat-info">
+                                    <span class="stat-number" id="totalQuestions">0</span>
+                                    <span class="stat-label">Preguntas Entrenadas</span>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <i class="fas fa-tags"></i>
+                                <div class="stat-info">
+                                    <span class="stat-number" id="totalCategories">0</span>
+                                    <span class="stat-label">Categorías</span>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <i class="fas fa-chart-line"></i>
+                                <div class="stat-info">
+                                    <span class="stat-number" id="trainingAccuracy">--</span>
+                                    <span class="stat-label">Precisión</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="knowledge-filters">
+                            <input type="text" id="knowledgeSearch" placeholder="Buscar en la base de conocimientos..."
+                                   onkeyup="filterKnowledge()">
+                            <select id="categoryFilter" onchange="filterKnowledge()">
+                                <option value="">Todas las categorías</option>
+                            </select>
+                        </div>
+                        
+                        <div id="knowledgeList" class="knowledge-list"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal para editar entrenamiento -->
+    <div id="editTrainingModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Editar Entrenamiento</h3>
+                <span class="close" onclick="closeEditModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="editTrainingForm">
+                    <input type="hidden" id="editTrainingId">
+                    <div class="form-group">
+                        <label for="editQuestion">Pregunta</label>
+                        <textarea id="editQuestion" name="question" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="editAnswer">Respuesta</label>
+                        <textarea id="editAnswer" name="answer" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="editCategory">Categoría</label>
+                        <input type="text" id="editCategory" name="category">
+                    </div>
+                    <div class="form-group">
+                        <label for="editKeywords">Palabras Clave</label>
+                        <input type="text" id="editKeywords" name="keywords">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="training.js"></script>
+</body>
+</html>

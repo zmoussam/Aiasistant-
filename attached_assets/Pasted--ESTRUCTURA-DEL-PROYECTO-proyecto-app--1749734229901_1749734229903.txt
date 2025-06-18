@@ -1,0 +1,1502 @@
+# ==================== ESTRUCTURA DEL PROYECTO ====================
+"""
+proyecto/
+├── app/
+│   ├── __init__.py
+│   ├── config.py
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── user.py
+│   │   ├── appointment.py
+│   │   └── subscription.py
+│   ├── routes/
+│   │   ├── __init__.py
+│   │   ├── auth.py
+│   │   ├── appointments.py
+│   │   ├── whatsapp.py
+│   │   └── payments.py
+│   ├── services/
+│   │   ├── __init__.py
+│   │   ├── openai_service.py
+│   │   ├── whatsapp_service.py
+│   │   └── notification_service.py
+│   └── utils/
+│       ├── __init__.py
+│       ├── database.py
+│       └── validators.py
+├── streamlit_app/
+│   ├── main.py
+│   ├── pages/
+│   │   ├── login.py
+│   │   ├── dashboard.py
+│   │   └── settings.py
+├── tests/
+├── migrations/
+├── requirements.txt
+├── .env.example
+├── Dockerfile
+└── run.py
+"""
+
+# ==================== app/config.py ====================
+import os
+from dotenv import load_dotenv
+from typing import Optional
+
+load_dotenv()
+
+class Config:
+    # Base de datos
+    SUPABASE_URL: str = os.getenv("SUPABASE_URL", "")
+    SUPABASE_KEY: str = os.getenv("SUPABASE_KEY", "")
+    
+    # OpenAI
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+    
+    # Stripe
+    STRIPE_PUBLISHABLE_KEY: str = os.getenv("STRIPE_PUBLISHABLE_KEY", "")
+    STRIPE_SECRET_KEY: str = os.getenv("STRIPE_SECRET_KEY", "")
+    STRIPE_WEBHOOK_SECRET: str = os.getenv("STRIPE_WEBHOOK_SECRET", "")
+    
+    # WhatsApp
+    WHATSAPP_TOKEN: str = os.getenv("WHATSAPP_TOKEN", "")
+    WHATSAPP_VERIFY_TOKEN: str = os.getenv("WHATSAPP_VERIFY_TOKEN", "")
+    
+    # App
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "dev-secret-key")
+    DEBUG: bool = os.getenv("DEBUG", "False").lower() == "true"
+    
+    # JWT
+    JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY", "jwt-secret")
+    JWT_ACCESS_TOKEN_EXPIRES: int = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRES", "3600"))
+
+# ==================== app/utils/database.py ====================
+from supabase import create_client, Client
+from app.config import Config
+import logging
+
+logger = logging.getLogger(__name__)
+
+class DatabaseService:
+    def __init__(self):
+        self.client: Client = create_client(Config.SUPABASE_URL, Config.SUPABASE_KEY)
+    
+    def get_client(self) -> Client:
+        return self.client
+    
+    def health_check(self) -> bool:
+        try:
+            result = self.client.table("users").select("id").limit(1).execute()
+            return True
+        except Exception as e:
+            logger.error(f"Database health check failed: {e}")
+            return False
+
+db = DatabaseService()
+
+# ==================== app/models/user.py ====================
+from pydantic import BaseModel, EmailStr, validator
+from typing import Optional
+from datetime import datetime
+from enum import Enum
+
+class SubscriptionStatus(str, Enum):
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+    CANCELLED = "cancelled"
+    PAST_DUE = "past_due"
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str
+    business_name: str
+    phone: Optional[str] = None
+    
+    @validator('password')
+    def validate_password(cls, v):
+        if len(v) < 8:
+            raise ValueError('La contraseña debe tener al menos 8 caracteres')
+        return v
+
+class UserResponse(BaseModel):
+    id: str
+    email: str
+    business_name: str
+    phone: Optional[str]
+    subscription_status: SubscriptionStatus
+    created_at: datetime
+    updated_at: datetime
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+# ==================== app/models/appointment.py ====================
+from pydantic import BaseModel
+from datetime import datetime, date, time
+from typing import Optional
+from enum import Enum
+
+class AppointmentStatus(str, Enum):
+    SCHEDULED = "scheduled"
+    CONFIRMED = "confirmed"
+    CANCELLED = "cancelled"
+    COMPLETED = "completed"
+    NO_SHOW = "no_show"
+
+class AppointmentCreate(BaseModel):
+    customer_name: str
+    customer_phone: str
+    customer_email: Optional[str] = None
+    appointment_date: date
+    appointment_time: time
+    service: str
+    notes: Optional[str] = None
+
+class AppointmentUpdate(BaseModel):
+    customer_name: Optional[str] = None
+    customer_phone: Optional[str] = None
+    customer_email: Optional[str] = None
+    appointment_date: Optional[date] = None
+    appointment_time: Optional[time] = None
+    service: Optional[str] = None
+    status: Optional[AppointmentStatus] = None
+    notes: Optional[str] = None
+
+class AppointmentResponse(BaseModel):
+    id: str
+    user_id: str
+    customer_name: str
+    customer_phone: str
+    customer_email: Optional[str]
+    appointment_date: date
+    appointment_time: time
+    service: str
+    status: AppointmentStatus
+    notes: Optional[str]
+    created_at: datetime
+    updated_at: datetime
+
+# ==================== app/services/openai_service.py ====================
+import openai
+from app.config import Config
+import logging
+from typing import Dict, List
+
+logger = logging.getLogger(__name__)
+openai.api_key = Config.OPENAI_API_KEY
+
+class OpenAIService:
+    def __init__(self):
+        self.client = openai.OpenAI(api_key=Config.OPENAI_API_KEY)
+    
+    def generate_response(self, message: str, business_context: Dict = None) -> str:
+        try:
+            system_prompt = self._build_system_prompt(business_context)
+            
+            response = self.client.chat.completions.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": message}
+                ],
+                max_tokens=500,
+                temperature=0.7
+            )
+            
+            return response.choices[0].message.content
+        except Exception as e:
+            logger.error(f"Error generating OpenAI response: {e}")
+            return "Lo siento, estoy experimentando dificultades técnicas. Por favor, intenta de nuevo más tarde."
+    
+    def _build_system_prompt(self, business_context: Dict = None) -> str:
+        base_prompt = """Eres un asistente virtual profesional y amigable. 
+        Ayudas a los clientes con información sobre el negocio, agendamiento de citas, 
+        y consultas generales. Mantén un tono profesional pero cálido."""
+        
+        if business_context:
+            business_info = f"""
+            
+            INFORMACIÓN DEL NEGOCIO:
+            - Nombre: {business_context.get('business_name', 'No especificado')}
+            - Servicios: {business_context.get('services', 'Consulta servicios disponibles')}
+            - Horarios: {business_context.get('hours', 'Consulta horarios de atención')}
+            - Teléfono: {business_context.get('phone', 'No especificado')}
+            """
+            base_prompt += business_info
+        
+        return base_prompt
+
+# ==================== app/services/whatsapp_service.py ====================
+import requests
+from app.config import Config
+import logging
+from typing import Dict
+
+logger = logging.getLogger(__name__)
+
+class WhatsAppService:
+    def __init__(self):
+        self.token = Config.WHATSAPP_TOKEN
+        self.base_url = "https://graph.facebook.com/v17.0"
+    
+    def send_message(self, phone_number: str, message: str) -> bool:
+        try:
+            url = f"{self.base_url}/YOUR_PHONE_NUMBER_ID/messages"
+            
+            headers = {
+                "Authorization": f"Bearer {self.token}",
+                "Content-Type": "application/json"
+            }
+            
+            data = {
+                "messaging_product": "whatsapp",
+                "to": phone_number,
+                "text": {"body": message}
+            }
+            
+            response = requests.post(url, headers=headers, json=data)
+            response.raise_for_status()
+            
+            logger.info(f"Message sent successfully to {phone_number}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error sending WhatsApp message: {e}")
+            return False
+    
+    def verify_webhook(self, verify_token: str, challenge: str) -> str:
+        if verify_token == Config.WHATSAPP_VERIFY_TOKEN:
+            return challenge
+        return "Error de verificación"
+
+# ==================== app/services/notification_service.py ====================
+from app.services.whatsapp_service import WhatsAppService
+from app.utils.database import db
+import logging
+from datetime import datetime, date, timedelta
+from typing import List, Dict
+
+logger = logging.getLogger(__name__)
+
+class NotificationService:
+    def __init__(self):
+        self.whatsapp_service = WhatsAppService()
+        self.db_client = db.get_client()
+    
+    def send_appointment_reminder(self, appointment_id: str) -> bool:
+        try:
+            # Obtener información de la cita
+            appointment = self.db_client.table("appointments").select("*").eq("id", appointment_id).single().execute()
+            
+            if not appointment.data:
+                logger.error(f"Appointment {appointment_id} not found")
+                return False
+            
+            apt_data = appointment.data
+            
+            # Crear mensaje de recordatorio
+            message = f"""
+🗓️ *Recordatorio de Cita*
+
+Hola {apt_data['customer_name']},
+
+Te recordamos tu cita programada para:
+📅 Fecha: {apt_data['appointment_date']}
+🕐 Hora: {apt_data['appointment_time']}
+🏢 Servicio: {apt_data['service']}
+
+Si necesitas cancelar o reprogramar, responde a este mensaje.
+
+¡Te esperamos!
+            """.strip()
+            
+            return self.whatsapp_service.send_message(apt_data['customer_phone'], message)
+            
+        except Exception as e:
+            logger.error(f"Error sending appointment reminder: {e}")
+            return False
+    
+    def get_appointments_for_reminder(self, days_ahead: int = 1) -> List[Dict]:
+        try:
+            reminder_date = (date.today() + timedelta(days=days_ahead)).isoformat()
+            
+            appointments = self.db_client.table("appointments").select("*").eq("appointment_date", reminder_date).eq("status", "scheduled").execute()
+            
+            return appointments.data
+            
+        except Exception as e:
+            logger.error(f"Error getting appointments for reminder: {e}")
+            return []
+
+# ==================== app/routes/auth.py ====================
+from flask import Blueprint, request, jsonify, session
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from app.models.user import UserCreate, UserLogin, UserResponse
+from app.utils.database import db
+import bcrypt
+import logging
+from pydantic import ValidationError
+
+auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
+logger = logging.getLogger(__name__)
+
+@auth_bp.route('/register', methods=['POST'])
+def register():
+    try:
+        data = request.get_json()
+        user_data = UserCreate(**data)
+        
+        # Verificar si el usuario ya existe
+        existing_user = db.get_client().table("users").select("id").eq("email", user_data.email).execute()
+        
+        if existing_user.data:
+            return jsonify({"error": "El usuario ya existe"}), 400
+        
+        # Hash de la contraseña
+        hashed_password = bcrypt.hashpw(user_data.password.encode('utf-8'), bcrypt.gensalt())
+        
+        # Crear usuario en Supabase
+        user_record = {
+            "email": user_data.email,
+            "password_hash": hashed_password.decode('utf-8'),
+            "business_name": user_data.business_name,
+            "phone": user_data.phone,
+            "subscription_status": "inactive"
+        }
+        
+        result = db.get_client().table("users").insert(user_record).execute()
+        
+        if result.data:
+            access_token = create_access_token(identity=result.data[0]['id'])
+            return jsonify({
+                "message": "Usuario creado exitosamente",
+                "access_token": access_token,
+                "user": result.data[0]
+            }), 201
+        
+        return jsonify({"error": "Error creando usuario"}), 500
+        
+    except ValidationError as e:
+        return jsonify({"error": "Datos inválidos", "details": e.errors()}), 400
+    except Exception as e:
+        logger.error(f"Registration error: {e}")
+        return jsonify({"error": "Error interno del servidor"}), 500
+
+@auth_bp.route('/login', methods=['POST'])
+def login():
+    try:
+        data = request.get_json()
+        login_data = UserLogin(**data)
+        
+        # Buscar usuario
+        user_result = db.get_client().table("users").select("*").eq("email", login_data.email).execute()
+        
+        if not user_result.data:
+            return jsonify({"error": "Credenciales inválidas"}), 401
+        
+        user = user_result.data[0]
+        
+        # Verificar contraseña
+        if bcrypt.checkpw(login_data.password.encode('utf-8'), user['password_hash'].encode('utf-8')):
+            access_token = create_access_token(identity=user['id'])
+            
+            # Remover hash de contraseña de la respuesta
+            user.pop('password_hash', None)
+            
+            return jsonify({
+                "message": "Login exitoso",
+                "access_token": access_token,
+                "user": user
+            }), 200
+        
+        return jsonify({"error": "Credenciales inválidas"}), 401
+        
+    except ValidationError as e:
+        return jsonify({"error": "Datos inválidos", "details": e.errors()}), 400
+    except Exception as e:
+        logger.error(f"Login error: {e}")
+        return jsonify({"error": "Error interno del servidor"}), 500
+
+@auth_bp.route('/profile', methods=['GET'])
+@jwt_required()
+def get_profile():
+    try:
+        user_id = get_jwt_identity()
+        
+        user_result = db.get_client().table("users").select("*").eq("id", user_id).execute()
+        
+        if not user_result.data:
+            return jsonify({"error": "Usuario no encontrado"}), 404
+        
+        user = user_result.data[0]
+        user.pop('password_hash', None)
+        
+        return jsonify({"user": user}), 200
+        
+    except Exception as e:
+        logger.error(f"Profile error: {e}")
+        return jsonify({"error": "Error interno del servidor"}), 500
+
+# ==================== app/routes/appointments.py ====================
+from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from app.models.appointment import AppointmentCreate, AppointmentUpdate, AppointmentResponse
+from app.utils.database import db
+import logging
+from pydantic import ValidationError
+from datetime import datetime
+
+appointments_bp = Blueprint('appointments', __name__, url_prefix='/api/appointments')
+logger = logging.getLogger(__name__)
+
+@appointments_bp.route('/', methods=['GET'])
+@jwt_required()
+def get_appointments():
+    try:
+        user_id = get_jwt_identity()
+        
+        # Parámetros de consulta
+        page = int(request.args.get('page', 1))
+        limit = int(request.args.get('limit', 10))
+        status = request.args.get('status')
+        
+        query = db.get_client().table("appointments").select("*").eq("user_id", user_id)
+        
+        if status:
+            query = query.eq("status", status)
+        
+        # Paginación
+        start = (page - 1) * limit
+        end = start + limit - 1
+        
+        result = query.range(start, end).order("appointment_date", desc=True).execute()
+        
+        return jsonify({
+            "appointments": result.data,
+            "total": len(result.data),
+            "page": page,
+            "limit": limit
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Get appointments error: {e}")
+        return jsonify({"error": "Error obteniendo citas"}), 500
+
+@appointments_bp.route('/', methods=['POST'])
+@jwt_required()
+def create_appointment():
+    try:
+        user_id = get_jwt_identity()
+        data = request.get_json()
+        
+        appointment_data = AppointmentCreate(**data)
+        
+        # Crear registro de cita
+        appointment_record = {
+            "user_id": user_id,
+            "customer_name": appointment_data.customer_name,
+            "customer_phone": appointment_data.customer_phone,
+            "customer_email": appointment_data.customer_email,
+            "appointment_date": appointment_data.appointment_date.isoformat(),
+            "appointment_time": appointment_data.appointment_time.isoformat(),
+            "service": appointment_data.service,
+            "status": "scheduled",
+            "notes": appointment_data.notes
+        }
+        
+        result = db.get_client().table("appointments").insert(appointment_record).execute()
+        
+        if result.data:
+            return jsonify({
+                "message": "Cita creada exitosamente",
+                "appointment": result.data[0]
+            }), 201
+        
+        return jsonify({"error": "Error creando cita"}), 500
+        
+    except ValidationError as e:
+        return jsonify({"error": "Datos inválidos", "details": e.errors()}), 400
+    except Exception as e:
+        logger.error(f"Create appointment error: {e}")
+        return jsonify({"error": "Error interno del servidor"}), 500
+
+@appointments_bp.route('/<appointment_id>', methods=['PUT'])
+@jwt_required()
+def update_appointment(appointment_id):
+    try:
+        user_id = get_jwt_identity()
+        data = request.get_json()
+        
+        update_data = AppointmentUpdate(**data)
+        
+        # Verificar que la cita pertenece al usuario
+        existing = db.get_client().table("appointments").select("id").eq("id", appointment_id).eq("user_id", user_id).execute()
+        
+        if not existing.data:
+            return jsonify({"error": "Cita no encontrada"}), 404
+        
+        # Preparar datos de actualización
+        update_record = {}
+        for field, value in update_data.dict(exclude_unset=True).items():
+            if field in ['appointment_date', 'appointment_time'] and value:
+                update_record[field] = value.isoformat()
+            else:
+                update_record[field] = value
+        
+        if update_record:
+            update_record['updated_at'] = datetime.utcnow().isoformat()
+            
+            result = db.get_client().table("appointments").update(update_record).eq("id", appointment_id).execute()
+            
+            return jsonify({
+                "message": "Cita actualizada exitosamente",
+                "appointment": result.data[0] if result.data else None
+            }), 200
+        
+        return jsonify({"error": "No hay datos para actualizar"}), 400
+        
+    except ValidationError as e:
+        return jsonify({"error": "Datos inválidos", "details": e.errors()}), 400
+    except Exception as e:
+        logger.error(f"Update appointment error: {e}")
+        return jsonify({"error": "Error interno del servidor"}), 500
+
+@appointments_bp.route('/<appointment_id>', methods=['DELETE'])
+@jwt_required()
+def delete_appointment(appointment_id):
+    try:
+        user_id = get_jwt_identity()
+        
+        # Verificar que la cita pertenece al usuario
+        result = db.get_client().table("appointments").delete().eq("id", appointment_id).eq("user_id", user_id).execute()
+        
+        if result.data:
+            return jsonify({"message": "Cita eliminada exitosamente"}), 200
+        
+        return jsonify({"error": "Cita no encontrada"}), 404
+        
+    except Exception as e:
+        logger.error(f"Delete appointment error: {e}")
+        return jsonify({"error": "Error interno del servidor"}), 500
+
+# ==================== app/routes/whatsapp.py ====================
+from flask import Blueprint, request, jsonify
+from app.services.openai_service import OpenAIService
+from app.services.whatsapp_service import WhatsAppService
+from app.utils.database import db
+import logging
+import json
+
+whatsapp_bp = Blueprint('whatsapp', __name__, url_prefix='/api/whatsapp')
+logger = logging.getLogger(__name__)
+
+openai_service = OpenAIService()
+whatsapp_service = WhatsAppService()
+
+@whatsapp_bp.route('/webhook', methods=['GET'])
+def verify_webhook():
+    verify_token = request.args.get('hub.verify_token')
+    challenge = request.args.get('hub.challenge')
+    
+    response = whatsapp_service.verify_webhook(verify_token, challenge)
+    
+    if response != "Error de verificación":
+        return response, 200
+    else:
+        return "Error de verificación", 403
+
+@whatsapp_bp.route('/webhook', methods=['POST'])
+def handle_webhook():
+    try:
+        data = request.get_json()
+        
+        # Validar estructura del webhook
+        if not data or 'entry' not in data:
+            return jsonify({"status": "error", "message": "Invalid webhook data"}), 400
+        
+        for entry in data['entry']:
+            if 'changes' in entry:
+                for change in entry['changes']:
+                    if change.get('field') == 'messages':
+                        process_message(change['value'])
+        
+        return jsonify({"status": "success"}), 200
+        
+    except Exception as e:
+        logger.error(f"Webhook error: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+def process_message(message_data):
+    try:
+        if 'messages' not in message_data:
+            return
+        
+        for message in message_data['messages']:
+            if message.get('type') == 'text':
+                phone_number = message['from']
+                text_message = message['text']['body']
+                
+                # Obtener contexto del negocio (opcional)
+                business_context = get_business_context(phone_number)
+                
+                # Generar respuesta con OpenAI
+                response = openai_service.generate_response(text_message, business_context)
+                
+                # Enviar respuesta
+                whatsapp_service.send_message(phone_number, response)
+                
+                # Registrar conversación (opcional)
+                log_conversation(phone_number, text_message, response)
+                
+    except Exception as e:
+        logger.error(f"Process message error: {e}")
+
+def get_business_context(phone_number):
+    """Obtener contexto del negocio basado en el número de teléfono"""
+    try:
+        # Implementar lógica para obtener contexto del negocio
+        # Por ejemplo, buscar en base de datos según el número
+        return {
+            "business_name": "Mi Negocio",
+            "services": "Consultoría, Asesoría",
+            "hours": "Lunes a Viernes 9:00-18:00"
+        }
+    except Exception as e:
+        logger.error(f"Error getting business context: {e}")
+        return None
+
+def log_conversation(phone_number, message, response):
+    """Registrar conversación en base de datos"""
+    try:
+        conversation_record = {
+            "phone_number": phone_number,
+            "user_message": message,
+            "bot_response": response,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+        db.get_client().table("conversations").insert(conversation_record).execute()
+        
+    except Exception as e:
+        logger.error(f"Error logging conversation: {e}")
+
+# ==================== app/routes/payments.py ====================
+from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required, get_jwt_identity
+import stripe
+from app.config import Config
+from app.utils.database import db
+import logging
+
+payments_bp = Blueprint('payments', __name__, url_prefix='/api/payments')
+logger = logging.getLogger(__name__)
+
+stripe.api_key = Config.STRIPE_SECRET_KEY
+
+@payments_bp.route('/create-subscription', methods=['POST'])
+@jwt_required()
+def create_subscription():
+    try:
+        user_id = get_jwt_identity()
+        data = request.get_json()
+        
+        price_id = data.get('price_id')
+        if not price_id:
+            return jsonify({"error": "price_id es requerido"}), 400
+        
+        # Obtener información del usuario
+        user_result = db.get_client().table("users").select("*").eq("id", user_id).execute()
+        
+        if not user_result.data:
+            return jsonify({"error": "Usuario no encontrado"}), 404
+        
+        user = user_result.data[0]
+        
+        # Crear customer en Stripe si no existe
+        stripe_customer_id = user.get('stripe_customer_id')
+        
+        if not stripe_customer_id:
+            customer = stripe.Customer.create(
+                email=user['email'],
+                name=user['business_name']
+            )
+            stripe_customer_id = customer.id
+            
+            # Actualizar usuario con customer_id
+            db.get_client().table("users").update({
+                "stripe_customer_id": stripe_customer_id
+            }).eq("id", user_id).execute()
+        
+        # Crear suscripción
+        subscription = stripe.Subscription.create(
+            customer=stripe_customer_id,
+            items=[{'price': price_id}],
+            payment_behavior='default_incomplete',
+            payment_settings={'save_default_payment_method': 'on_subscription'},
+            expand=['latest_invoice.payment_intent'],
+        )
+        
+        return jsonify({
+            "subscription_id": subscription.id,
+            "client_secret": subscription.latest_invoice.payment_intent.client_secret
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Create subscription error: {e}")
+        return jsonify({"error": "Error creando suscripción"}), 500
+
+@payments_bp.route('/webhook', methods=['POST'])
+def stripe_webhook():
+    """Webhook para manejar eventos de Stripe"""
+    try:
+        payload = request.get_data(as_text=True)
+        sig_header = request.headers.get('Stripe-Signature')
+        
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, Config.STRIPE_WEBHOOK_SECRET
+        )
+        
+        # Manejar diferentes tipos de eventos
+        if event['type'] == 'invoice.payment_succeeded':
+            handle_payment_succeeded(event['data']['object'])
+        elif event['type'] == 'invoice.payment_failed':
+            handle_payment_failed(event['data']['object'])
+        elif event['type'] == 'customer.subscription.deleted':
+            handle_subscription_cancelled(event['data']['object'])
+        
+        return jsonify({"status": "success"}), 200
+        
+    except Exception as e:
+        logger.error(f"Stripe webhook error: {e}")
+        return jsonify({"error": str(e)}), 400
+
+def handle_payment_succeeded(invoice):
+    """Manejar pago exitoso"""
+    try:
+        customer_id = invoice['customer']
+        
+        # Encontrar usuario por customer_id
+        user_result = db.get_client().table("users").select("*").eq("stripe_customer_id", customer_id).execute()
+        
+        if user_result.data:
+            # Actualizar estado de suscripción
+            db.get_client().table("users").update({
+                "subscription_status": "active",
+                "updated_at": datetime.utcnow().isoformat()
+            }).eq("stripe_customer_id", customer_id).execute()
+            
+            logger.info(f"Payment succeeded for customer {customer_id}")
+            
+    except Exception as e:
+        logger.error(f"Handle payment succeeded error: {e}")
+
+def handle_payment_failed(invoice):
+    """Manejar fallo de pago"""
+    try:
+        customer_id = invoice['customer']
+        
+        # Actualizar estado de suscripción
+        db.get_client().table("users").update({
+            "subscription_status": "past_due",
+            "updated_at": datetime.utcnow().isoformat()
+        }).eq("stripe_customer_id", customer_id).execute()
+        
+        logger.info(f"Payment failed for customer {customer_id}")
+        
+    except Exception as e:
+        logger.error(f"Handle payment failed error: {e}")
+
+def handle_subscription_cancelled(subscription):
+    """Manejar cancelación de suscripción"""
+    try:
+        customer_id = subscription['customer']
+        
+        # Actualizar estado de suscripción
+        db.get_client().table("users").update({
+            "subscription_status": "cancelled",
+            "updated_at": datetime.utcnow().isoformat()
+        }).eq("stripe_customer_id", customer_id).execute()
+        
+        logger.info(f"Subscription cancelled for customer {customer_id}")
+        
+    except Exception as e:
+        logger.error(f"Handle subscription cancelled error: {e}")
+
+@payments_bp.route('/plans', methods=['GET'])
+def get_plans():
+    """Obtener planes de suscripción disponibles"""
+    try:
+        plans = [
+            {
+                "id": "basic",
+                "name": "Plan Básico",
+                "price": 29.99,
+                "currency": "usd",
+                "interval": "month",
+                "features": [
+                    "Hasta 100 conversaciones/mes",
+                    "1 asistente virtual",
+                    "Recordatorios básicos",
+                    "Soporte por email"
+                ],
+                "stripe_price_id": "price_basic_monthly"
+            },
+            {
+                "id": "premium",
+                "name": "Plan Premium",
+                "price": 79.99,
+                "currency": "usd",
+                "interval": "month",
+                "features": [
+                    "Conversaciones ilimitadas",
+                    "Múltiples asistentes virtuales",
+                    "Recordatorios avanzados",
+                    "Llamadas inteligentes",
+                    "Analytics avanzados",
+                    "Soporte prioritario"
+                ],
+                "stripe_price_id": "price_premium_monthly"
+            }
+        ]
+        
+        return jsonify({"plans": plans}), 200
+        
+    except Exception as e:
+        logger.error(f"Get plans error: {e}")
+        return jsonify({"error": "Error obteniendo planes"}), 500
+
+# ==================== app/__init__.py ====================
+from flask import Flask
+from flask_jwt_extended import JWTManager
+from flask_cors import CORS
+from app.config import Config
+from app.routes.auth import auth_bp
+from app.routes.appointments import appointments_bp
+from app.routes.whatsapp import whatsapp_bp
+from app.routes.payments import payments_bp
+import logging
+
+def create_app():
+    app = Flask(__name__)
+    
+    # Configuración
+    app.config['SECRET_KEY'] = Config.SECRET_KEY
+    app.config['JWT_SECRET_KEY'] = Config.JWT_SECRET_KEY
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = Config.JWT_ACCESS_TOKEN_EXPIRES
+    
+    # Extensiones
+    jwt = JWTManager(app)
+    CORS(app)
+    
+    # Logging
+    logging.basicConfig(level=logging.INFO)
+    
+    # Blueprints
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(appointments_bp)
+    app.register_blueprint(whatsapp_bp)
+    app.register_blueprint(payments_bp)
+    
+    # Rutas básicas
+    @app.route('/health')
+    def health_check():
+        from app.utils.database import db
+        db_status = db.health_check()
+        return {
+            "status": "healthy" if db_status else "unhealthy",
+            "database": "connected" if db_status else "disconnected"
+        }
+    
+    @app.route('/')
+    def index():
+        return {"message": "AIAsistentPro API v1.0", "status": "running"}
+    
+    return app
+
+# ==================== streamlit_app/main.py ====================
+import streamlit as st
+import requests
+import pandas as pd
+from datetime import datetime, date, time
+import plotly.express as px
+import plotly.graph_objects as go
+
+# Configuración de la página
+st.set_page_config(
+    page_title="AIAsistentPro Dashboard",
+    page_icon="🤖",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# API Base URL
+API_BASE_URL = "http://localhost:5000/api"
+
+class APIClient:
+    def __init__(self, base_url, token=None):
+        self.base_url = base_url
+        self.token = token
+        self.headers = {"Content-Type": "application/json"}
+        if token:
+            self.headers["Authorization"] = f"Bearer {token}"
+    
+    def login(self, email, password):
+        response = requests.post(
+            f"{self.base_url}/auth/login",
+            json={"email": email, "password": password}
+        )
+        return response
+    
+    def register(self, email, password, business_name, phone=None):
+        response = requests.post(
+            f"{self.base_url}/auth/register",
+            json={
+                "email": email,
+                "password": password,
+                "business_name": business_name,
+                "phone": phone
+            }
+        )
+        return response
+    
+    def get_appointments(self, page=1, limit=10, status=None):
+        params = {"page": page, "limit": limit}
+        if status:
+            params["status"] = status
+            
+        response = requests.get(
+            f"{self.base_url}/appointments/",
+            headers=self.headers,
+            params=params
+        )
+        return response
+    
+    def create_appointment(self, appointment_data):
+        response = requests.post(
+            f"{self.base_url}/appointments/",
+            headers=self.headers,
+            json=appointment_data
+        )
+        return response
+    
+    def get_plans(self):
+        response = requests.get(f"{self.base_url}/payments/plans")
+        return response
+
+def init_session_state():
+    if 'logged_in' not in st.session_state:
+        st.session_state.logged_in = False
+    if 'token' not in st.session_state:
+        st.session_state.token = None
+    if 'user' not in st.session_state:
+        st.session_state.user = None
+    if 'api_client' not in st.session_state:
+        st.session_state.api_client = APIClient(API_BASE_URL)
+
+def login_page():
+    st.title("🤖 AIAsistentPro")
+    st.subheader("Iniciar Sesión")
+    
+    tab1, tab2 = st.tabs(["Iniciar Sesión", "Registrarse"])
+    
+    with tab1:
+        with st.form("login_form"):
+            email = st.text_input("Email")
+            password = st.text_input("Contraseña", type="password")
+            submit_button = st.form_submit_button("Iniciar Sesión")
+            
+            if submit_button:
+                if email and password:
+                    response = st.session_state.api_client.login(email, password)
+                    
+                    if response.status_code == 200:
+                        data = response.json()
+                        st.session_state.logged_in = True
+                        st.session_state.token = data['access_token']
+                        st.session_state.user = data['user']
+                        st.session_state.api_client = APIClient(API_BASE_URL, data['access_token'])
+                        st.success("¡Login exitoso!")
+                        st.rerun()
+                    else:
+                        st.error("Credenciales inválidas")
+                else:
+                    st.error("Por favor completa todos los campos")
+    
+    with tab2:
+        with st.form("register_form"):
+            reg_email = st.text_input("Email", key="reg_email")
+            reg_password = st.text_input("Contraseña", type="password", key="reg_password")
+            business_name = st.text_input("Nombre del Negocio")
+            phone = st.text_input("Teléfono (opcional)")
+            register_button = st.form_submit_button("Registrarse")
+            
+            if register_button:
+                if reg_email and reg_password and business_name:
+                    response = st.session_state.api_client.register(
+                        reg_email, reg_password, business_name, phone
+                    )
+                    
+                    if response.status_code == 201:
+                        st.success("¡Registro exitoso! Ahora puedes iniciar sesión.")
+                    else:
+                        error_data = response.json()
+                        st.error(f"Error: {error_data.get('error', 'Error desconocido')}")
+                else:
+                    st.error("Por favor completa todos los campos obligatorios")
+
+def dashboard_page():
+    st.title(f"📊 Dashboard - {st.session_state.user['business_name']}")
+    
+    # Sidebar
+    with st.sidebar:
+        st.write(f"👋 Bienvenido, {st.session_state.user['email']}")
+        st.write(f"📈 Estado: {st.session_state.user['subscription_status']}")
+        
+        if st.button("Cerrar Sesión"):
+            st.session_state.logged_in = False
+            st.session_state.token = None
+            st.session_state.user = None
+            st.rerun()
+    
+    # Tabs principales
+    tab1, tab2, tab3, tab4 = st.tabs(["📅 Citas", "💬 Conversaciones", "💳 Suscripción", "⚙️ Configuración"])
+    
+    with tab1:
+        appointments_tab()
+    
+    with tab2:
+        conversations_tab()
+    
+    with tab3:
+        subscription_tab()
+    
+    with tab4:
+        settings_tab()
+
+def appointments_tab():
+    st.header("Gestión de Citas")
+    
+    col1, col2 = st.columns([2, 1])
+    
+    with col1:
+        st.subheader("Lista de Citas")
+        
+        # Filtros
+        status_filter = st.selectbox(
+            "Filtrar por estado:",
+            ["Todas", "scheduled", "confirmed", "cancelled", "completed"]
+        )
+        
+        # Obtener citas
+        try:
+            response = st.session_state.api_client.get_appointments(
+                status=None if status_filter == "Todas" else status_filter
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                appointments = data['appointments']
+                
+                if appointments:
+                    df = pd.DataFrame(appointments)
+                    
+                    # Mostrar tabla
+                    st.dataframe(
+                        df[['customer_name', 'appointment_date', 'appointment_time', 'service', 'status']],
+                        use_container_width=True
+                    )
+                    
+                    # Métricas
+                    col_a, col_b, col_c = st.columns(3)
+                    with col_a:
+                        st.metric("Total Citas", len(appointments))
+                    with col_b:
+                        confirmed = len([a for a in appointments if a['status'] == 'confirmed'])
+                        st.metric("Confirmadas", confirmed)
+                    with col_c:
+                        pending = len([a for a in appointments if a['status'] == 'scheduled'])
+                        st.metric("Pendientes", pending)
+                else:
+                    st.info("No hay citas registradas")
+            else:
+                st.error("Error obteniendo citas")
+                
+        except Exception as e:
+            st.error(f"Error de conexión: {e}")
+    
+    with col2:
+        st.subheader("Nueva Cita")
+        
+        with st.form("new_appointment"):
+            customer_name = st.text_input("Nombre del Cliente")
+            customer_phone = st.text_input("Teléfono")
+            customer_email = st.text_input("Email (opcional)")
+            appointment_date = st.date_input("Fecha", min_value=date.today())
+            appointment_time = st.time_input("Hora")
+            service = st.text_input("Servicio")
+            notes = st.text_area("Notas (opcional)")
+            
+            submit = st.form_submit_button("Crear Cita")
+            
+            if submit:
+                if customer_name and customer_phone and service:
+                    appointment_data = {
+                        "customer_name": customer_name,
+                        "customer_phone": customer_phone,
+                        "customer_email": customer_email if customer_email else None,
+                        "appointment_date": appointment_date.isoformat(),
+                        "appointment_time": appointment_time.isoformat(),
+                        "service": service,
+                        "notes": notes if notes else None
+                    }
+                    
+                    try:
+                        response = st.session_state.api_client.create_appointment(appointment_data)
+                        
+                        if response.status_code == 201:
+                            st.success("¡Cita creada exitosamente!")
+                            st.rerun()
+                        else:
+                            st.error("Error creando la cita")
+                    except Exception as e:
+                        st.error(f"Error de conexión: {e}")
+                else:
+                    st.error("Por favor completa todos los campos obligatorios")
+
+def conversations_tab():
+    st.header("Conversaciones de WhatsApp")
+    
+    # Placeholder para estadísticas de conversaciones
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.metric("Conversaciones Hoy", "12", "↑ 3")
+    with col2:
+        st.metric("Respuestas Automáticas", "28", "↑ 8")
+    with col3:
+        st.metric("Tiempo Promedio", "2.3 min", "↓ 0.5")
+    with col4:
+        st.metric("Satisfacción", "94%", "↑ 2%")
+    
+    # Gráfico de conversaciones por hora
+    st.subheader("Actividad por Hora")
+    
+    # Datos de ejemplo
+    hours = list(range(0, 24))
+    conversations = [2, 1, 0, 0, 1, 3, 8, 12, 15, 18, 22, 20, 18, 16, 14, 12, 15, 18, 16, 12, 8, 6, 4, 3]
+    
+    fig = px.line(
+        x=hours, 
+        y=conversations,
+        title="Conversaciones por Hora del Día",
+        labels={"x": "Hora", "y": "Número de Conversaciones"}
+    )
+    st.plotly_chart(fig, use_container_width=True)
+    
+    # Últimas conversaciones
+    st.subheader("Últimas Conversaciones")
+    
+    sample_conversations = [
+        {"Teléfono": "+34123456789", "Mensaje": "¿Tienen cita disponible mañana?", "Respuesta": "Sí, tenemos disponibilidad a las 10:00 AM", "Hora": "14:30"},
+        {"Teléfono": "+34987654321", "Mensaje": "¿Cuáles son sus servicios?", "Respuesta": "Ofrecemos consultoría empresarial y asesoría legal", "Hora": "13:45"},
+        {"Teléfono": "+34555666777", "Mensaje": "Necesito cancelar mi cita", "Respuesta": "Entendido, ¿para qué fecha era su cita?", "Hora": "12:15"}
+    ]
+    
+    st.dataframe(pd.DataFrame(sample_conversations), use_container_width=True)
+
+def subscription_tab():
+    st.header("Gestión de Suscripción")
+    
+    current_plan = st.session_state.user.get('subscription_status', 'inactive')
+    
+    col1, col2 = st.columns([1, 2])
+    
+    with col1:
+        st.subheader("Plan Actual")
+        
+        if current_plan == 'active':
+            st.success("✅ Plan Premium Activo")
+            st.write("Renovación: 15 de Enero 2025")
+        else:
+            st.warning("⚠️ Sin Suscripción Activa")
+            st.write("Funcionalidad limitada")
+    
+    with col2:
+        st.subheader("Planes Disponibles")
+        
+        try:
+            response = st.session_state.api_client.get_plans()
+            
+            if response.status_code == 200:
+                plans_data = response.json()
+                plans = plans_data['plans']
+                
+                for plan in plans:
+                    with st.container():
+                        st.write(f"**{plan['name']}**")
+                        st.write(f"${plan['price']}/{plan['interval']}")
+                        
+                        for feature in plan['features']:
+                            st.write(f"• {feature}")
+                        
+                        if st.button(f"Seleccionar {plan['name']}", key=f"plan_{plan['id']}"):
+                            st.info("Funcionalidad de pago en desarrollo...")
+                        
+                        st.divider()
+            else:
+                st.error("Error obteniendo planes")
+                
+        except Exception as e:
+            st.error(f"Error de conexión: {e}")
+
+def settings_tab():
+    st.header("Configuración del Negocio")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.subheader("Información del Negocio")
+        
+        with st.form("business_settings"):
+            business_name = st.text_input(
+                "Nombre del Negocio", 
+                value=st.session_state.user.get('business_name', '')
+            )
+            phone = st.text_input(
+                "Teléfono", 
+                value=st.session_state.user.get('phone', '')
+            )
+            services = st.text_area(
+                "Servicios Ofrecidos",
+                placeholder="Consultoría, Asesoría, etc."
+            )
+            hours = st.text_area(
+                "Horarios de Atención",
+                placeholder="Lunes a Viernes: 9:00 - 18:00"
+            )
+            
+            if st.form_submit_button("Guardar Configuración"):
+                st.success("Configuración guardada exitosamente!")
+    
+    with col2:
+        st.subheader("Configuración del Asistente")
+        
+        with st.form("assistant_settings"):
+            greeting_message = st.text_area(
+                "Mensaje de Bienvenida",
+                value="¡Hola! Soy el asistente virtual. ¿En qué puedo ayudarte?",
+                height=100
+            )
+            
+            auto_response = st.checkbox(
+                "Respuestas Automáticas",
+                value=True
+            )
+            
+            response_delay = st.slider(
+                "Delay de Respuesta (segundos)",
+                min_value=0,
+                max_value=10,
+                value=2
+            )
+            
+            if st.form_submit_button("Guardar Configuración"):
+                st.success("Configuración del asistente guardada!")
+
+def main():
+    init_session_state()
+    
+    if not st.session_state.logged_in:
+        login_page()
+    else:
+        dashboard_page()
+
+if __name__ == "__main__":
+    main()
+
+# ==================== run.py ====================
+from app import create_app
+import os
+
+app = create_app()
+
+if __name__ == "__main__":
+    app.run(
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", 5000)),
+        debug=Config.DEBUG
+    )
+
+# ==================== requirements.txt (ACTUALIZADO) ====================
+# Flask y extensiones
+flask==2.3.3
+flask-jwt-extended==4.5.3
+flask-cors==4.0.0
+
+# Streamlit
+streamlit==1.28.1
+
+# Base de datos
+supabase==1.2.0
+
+# IA y APIs
+openai==1.3.5
+
+# Pagos
+stripe==6.8.0
+
+# Utilidades
+python-dotenv==1.0.0
+pandas==2.1.3
+plotly==5.17.0
+pydantic==2.5.0
+bcrypt==4.1.2
+requests==2.31.0
+
+# Producción
+gunicorn==21.2.0
+python-decouple==3.8
+
+# ==================== .env.example (ACTUALIZADO) ====================
+# Base de datos
+SUPABASE_URL=https://tu-proyecto.supabase.co
+SUPABASE_KEY=tu_clave_anon
+
+# OpenAI
+OPENAI_API_KEY=sk-tu_clave_openai
+
+# Stripe
+STRIPE_PUBLISHABLE_KEY=pk_test_tu_clave_publica
+STRIPE_SECRET_KEY=sk_test_tu_clave_secreta
+STRIPE_WEBHOOK_SECRET=whsec_tu_webhook_secret
+
+# WhatsApp
+WHATSAPP_TOKEN=tu_token_whatsapp
+WHATSAPP_VERIFY_TOKEN=tu_verify_token
+
+# Aplicación
+SECRET_KEY=tu_secret_key_super_segura
+DEBUG=False
+JWT_SECRET_KEY=tu_jwt_secret_key
+JWT_ACCESS_TOKEN_EXPIRES=3600
+
+# ==================== Dockerfile ====================
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Instalar dependencias del sistema
+RUN apt-get update && apt-get install -y \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copiar requirements
+COPY requirements.txt .
+
+# Instalar dependencias de Python
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copiar código
+COPY . .
+
+# Exponer puerto
+EXPOSE 5000
+
+# Variables de entorno
+ENV PYTHONPATH=/app
+ENV FLASK_APP=run.py
+
+# Comando por defecto
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "4", "run:app"]
+
+# ==================== docker-compose.yml ====================
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+
+  streamlit:
+    build: .
+    command: streamlit run streamlit_app/main.py --server.port=8501 --server.address=0.0.0.0
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+# ==================== migrations/create_tables.sql ====================
+-- Crear tabla de usuarios
+CREATE TABLE IF NOT EXISTS users (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    business_name VARCHAR(255) NOT NULL,
+    phone VARCHAR(20),
+    subscription_status VARCHAR(20) DEFAULT 'inactive',
+    stripe_customer_id VARCHAR(255),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Crear tabla de citas
+CREATE TABLE IF NOT EXISTS appointments (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    customer_name VARCHAR(255) NOT NULL,
+    customer_phone VARCHAR(20) NOT NULL,
+    customer_email VARCHAR(255),
+    appointment_date DATE NOT NULL,
+    appointment_time TIME NOT NULL,
+    service VARCHAR(255) NOT NULL,
+    status VARCHAR(20) DEFAULT 'scheduled',
+    notes TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Crear tabla de conversaciones
+CREATE TABLE IF NOT EXISTS conversations (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    phone_number VARCHAR(20) NOT NULL,
+    user_message TEXT NOT NULL,
+    bot_response TEXT NOT NULL,
+    timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Crear tabla de suscripciones
+CREATE TABLE IF NOT EXISTS subscriptions (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    stripe_subscription_id VARCHAR(255) UNIQUE NOT NULL,
+    plan_id VARCHAR(100) NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    current_period_start TIMESTAMP WITH TIME ZONE,
+    current_period_end TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Crear índices para mejorar performance
+CREATE INDEX IF NOT EXISTS idx_appointments_user_id ON appointments(user_id);
+CREATE INDEX IF NOT EXISTS idx_appointments_date ON appointments(appointment_date);
+CREATE INDEX IF NOT EXISTS idx_conversations_user_id ON conversations(user_id);
+CREATE INDEX IF NOT EXISTS idx_conversations_phone ON conversations(phone_number);
